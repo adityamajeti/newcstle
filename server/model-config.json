@@ -14,25 +14,54 @@
     ]
   },
   "User": {
-    "dataSource": "db"
+    "dataSource": "db",
+    "public": false
   },
   "AccessToken": {
-    "dataSource": "db",
+    "dataSource": "es",
     "public": false
   },
   "ACL": {
-    "dataSource": "db",
-    "public": false
+    "dataSource": "es",
+    "public": true
   },
   "RoleMapping": {
-    "dataSource": "db",
+    "dataSource": "es",
     "public": false,
     "options": {
       "strictObjectIDCoercion": true
     }
   },
   "Role": {
-    "dataSource": "db",
+    "dataSource": "es",
+    "public": true
+  },
+  "Users": {
+    "dataSource": "es",
+    "public": true
+  },
+  "Organization": {
+    "dataSource": "es",
+    "public": true
+  },
+  "Region": {
+    "dataSource": "es",
+    "public": true
+  },
+  "Domain": {
+    "dataSource": "es",
+    "public": true
+  },
+  "OrganizationDomain": {
+    "dataSource": "es",
+    "public": false
+  },
+  "UserDomain": {
+    "dataSource": "es",
+    "public": false
+  },
+  "UserRegion": {
+    "dataSource": "es",
     "public": false
   }
 }

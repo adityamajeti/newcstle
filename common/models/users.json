@@ -1,0 +1,115 @@
+{
+  "name": "Users",
+  "plural": "users",
+  "base": "User",
+  "idInjection": true,
+  "options": {
+    "realmRequired": true,
+    "realmDelimiter": ":"
+  },
+  "properties": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "status": {
+      "type": "string",
+      "required": true
+    },
+    "tenantId": {
+      "type": "string",
+      "required": true
+    },
+    "emailVerified": false,
+    "username": false,
+    "credentials": false,
+    "challenges": false
+  },
+  "validations": [],
+  "relations": {
+    "organization": {
+      "type": "belongsTo",
+      "model": "Organization",
+      "foreignKey": "tenantId",
+      "options": {
+        "nestRemoting": false
+      }
+    },
+    "domains": {
+      "type": "hasMany",
+      "model": "Domain",
+      "foreignKey": "userId",
+      "options": {
+        "nestRemoting": false
+      },
+      "through": "UserDomain",
+      "keyThrough": "domainId"
+    },
+    "regions": {
+      "type": "hasMany",
+      "model": "Region",
+      "foreignKey": "userId",
+      "options": {
+        "nestRemoting": true
+      },
+      "through": "UserRegion",
+      "keyThrough": "regionId"
+    }
+  },
+  "acls": [
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "$unauthenticated",
+      "permission": "DENY",
+      "property": "*"
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "$authenticated",
+      "permission": "ALLOW",
+      "property": [
+        "getRole"
+      ]
+    },
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "$owner",
+      "permission": "ALLOW"
+    },
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "$owner",
+      "permission": "DENY",
+      "property": [
+        "__link__regions",
+        "__unlink__regions"
+      ]
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "OrganizationAdmin",
+      "permission": "ALLOW",
+      "property": [
+        "updateAttributes",
+        "getRole",
+        "findRoles",
+        "__get__regions",
+        "__count__regions",
+        "__findById__regions",
+        "__link__regions",
+        "__unlink__regions"
+      ]
+    },
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "admin",
+      "permission": "ALLOW",
+      "property": "*"
+    }
+  ],
+  "methods": {}
+}

@@ -1,0 +1,131 @@
+{
+  "name": "Organization",
+  "plural": "organization",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "Timestamp": {}
+  },
+  "properties": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "alias": {
+      "type": "string",
+      "required": true
+    },
+    "status": {
+      "type": "string",
+      "required": true
+    },
+    "tags": {
+      "type": [
+        "string"
+      ]
+    }
+  },
+  "validations": [],
+  "relations": {
+    "regions": {
+      "type": "hasMany",
+      "model": "Region",
+      "foreignKey": "tenantId",
+      "options": {
+        "nestRemoting": false
+      }
+    },
+    "users": {
+      "type": "hasMany",
+      "model": "Users",
+      "foreignKey": "tenantId",
+      "options": {
+        "nestRemoting": false
+      }
+    },
+    "domains": {
+      "type": "hasMany",
+      "model": "Domain",
+      "foreignKey": "tenantId",
+      "options": {
+        "nestRemoting": false
+      },
+      "through": "OrganizationDomain",
+      "keyThrough": "domainId"
+    }
+  },
+  "acls": [
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "$unauthenticated",
+      "permission": "DENY",
+      "property": "*"
+    },
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "admin",
+      "permission": "ALLOW",
+      "property": "*"
+    },
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "$owner",
+      "permission": "ALLOW"
+    },
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "OrganizationAdmin",
+      "permission": "ALLOW",
+      "property": [
+        "findById",
+        "__get__users",
+        "__findById__users",
+        "__count__users",
+        "__create__users",
+        "__updateById__users",
+        "__destroyById__users",
+        "__get__regions",
+        "__findById__regions",
+        "__count__regions",
+        "__create__regions",
+        "__updateById__regions",
+        "__destroyById__regions",
+        "__get__domains",
+        "__findById__domains",
+        "__count__domains",
+        "__link__domains",
+        "__unlink__domains",
+        "__exists__domains",
+        "__get__regions",
+        "__findById__regions",
+        "__count__regions",
+        "__create__regions",
+        "__updateById__regions",
+        "__destroyById__regions"
+      ]
+    },
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "SystemEngineer",
+      "permission": "ALLOW",
+      "property": [
+        "findById",
+        "__get__domains",
+        "__findById__domains",
+        "__count__domains",
+        "__get__regions",
+        "__findById__regions",
+        "__count__regions"
+      ]
+    }
+  ],
+  "methods": {}
+}

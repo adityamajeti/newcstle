@@ -1,0 +1,47 @@
+{
+  "name": "OrganizationDomain",
+  "plural": "orgdomains",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "Timestamp": {}
+  },
+  "properties": {
+    "tenantId": {
+      "type": "string",
+      "required": true
+    },
+    "domainId": {
+      "type": "string"
+    },
+    "tags": {
+      "type": [
+        "string"
+      ]
+    }
+  },
+  "validations": [],
+  "relations": {
+    "organization": {
+      "type": "belongsTo",
+      "model": "Organization",
+      "foreignKey": "tenantId",
+      "options": {
+        "nestRemoting": false
+      }
+    },
+    "domain": {
+      "type": "belongsTo",
+      "model": "Domain",
+      "foreignKey": "domainId",
+      "options": {
+        "nestRemoting": false
+      }
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

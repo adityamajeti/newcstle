@@ -1,6 +1,10 @@
 {
   "loopback-component-explorer": {
-    "mountPath": "/explorer",
+    "apiInfo": {
+      "title": "Cetana APIs",
+      "description": "Explore Cetana APIs"
+    },
+    "mountPath": "/api/explorer",
     "generateOperationScopedModels": true
   }
 }

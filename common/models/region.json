@@ -1,0 +1,95 @@
+{
+  "name": "Region",
+  "plural": "regions",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "Timestamp": {}
+  },
+  "properties": {
+    "tenantId": {
+      "type": "string",
+      "required": true
+    },
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "address": {
+      "type": "object",
+      "required": true
+    },
+    "tags": {
+      "type": [
+        "string"
+      ]
+    }
+  },
+  "validations": [],
+  "relations": {
+    "organization": {
+      "type": "belongsTo",
+      "model": "Organization",
+      "foreignKey": "tenantId",
+      "options": {
+        "nestRemoting": false
+      }
+    }
+  },
+  "acls": [
+    {
+      "principalType": "ROLE",
+      "principalId": "$unauthenticated",
+      "permission": "DENY"
+    },
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "admin",
+      "permission": "ALLOW",
+      "property": "*"
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "OrganizationAdmin",
+      "permission": "ALLOW",
+      "property": [
+        "findById",
+        "updateAttributes",
+        "deleteById",
+        "__get__organization",
+        "__get__domains",
+        "__count__domains",
+        "__findById__domains",
+        "__link__domains",
+        "__unlink__domains",
+        "__get__users",
+        "__count__users",
+        "__findById__users",
+        "__link__users",
+        "__unlink__users"
+      ]
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "SystemEngineer",
+      "permission": "ALLOW",
+      "property": [
+        "findById",
+        "updateAttributes",
+        "deleteById",
+        "__get__organization",
+        "__get__domains",
+        "__count__domains",
+        "__findById__domains",
+        "__get__users",
+        "__count__users",
+        "__findById__users"
+      ]
+    }
+  ],
+  "methods": {}
+}
