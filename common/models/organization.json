@@ -14,7 +14,7 @@
       "type": "string",
       "required": true
     },
-    "alias": {
+    "realm": {
       "type": "string",
       "required": true
     },

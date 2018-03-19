@@ -91,6 +91,10 @@
         "type": "keyword",
         "index": true
       },
+      "domainId": {
+        "type": "keyword",
+        "index": true
+      },
       "parentId": {
         "type": "keyword",
         "index": true

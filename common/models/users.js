@@ -22,4 +22,86 @@ module.exports = function(Users) {
   Users.disableRemoteMethodByName('__destroyById__domains');
   Users.disableRemoteMethodByName('prototype.__updateById__domains');
 
+  Users.remoteMethod(
+    'getRole', {
+      description: "Get the role of the User",
+      accepts: [{
+        arg: 'id',
+        type: 'string',
+        required: true
+      }],
+      returns: {
+        arg: 'role',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/:id/role',
+        verb: 'get'
+      }
+    }
+  );
+
+  Users.remoteMethod(
+    'findRoles', {
+      description: "Get all the roles",
+      accepts: [],
+      returns: {
+        arg: 'roles',
+        type: 'any',
+        root: true
+      },
+      http: {
+        path: '/roles',
+        verb: 'get'
+      }
+    }
+  );
+
+  Users.remoteMethod(
+    'getUsersByRole', {
+      description: "Get Users by Role name",
+      accepts: [{
+        arg: 'role',
+        type: 'string',
+        required: true
+      }],
+      returns: {
+        arg: 'users',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/role/:role',
+        verb: 'get'
+      }
+    }
+  );
+
+  Users.remoteMethod(
+    'changeRole', {
+      description: "Add/Update role to the user",
+      accepts: [{
+        arg: 'id',
+        type: 'string',
+        required: true
+      }, {
+        arg: 'newRole',
+        type: 'string',
+        required: true
+      }],
+      returns: {
+        arg: 'role',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/:id/updateRole',
+        verb: 'put',
+        status: 200,
+        errorStatus: 400
+      }
+    }
+  );
+
 };

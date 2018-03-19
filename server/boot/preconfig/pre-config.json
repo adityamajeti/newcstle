@@ -1,0 +1,33 @@
+{
+  "Domain": [{
+      "name": "Parking",
+      "status": "active"
+    },
+    {
+      "name": "Lighting",
+      "status": "active"
+    },
+    {
+      "name": "Traffic",
+      "status": "active"
+    },
+    {
+      "name": "Environment",
+      "status": "active"
+    },
+    {
+      "name": "WasteManagement",
+      "status": "active"
+    }
+  ],
+  "Role": [{
+      "name": "admin"
+    },
+    {
+      "name": "OrganizationAdmin"
+    },
+    {
+      "name": "SystemEngineer"
+    }
+  ]
+}

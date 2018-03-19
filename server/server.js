@@ -20,7 +20,15 @@ app.start = function() {
 
 // Bootstrap the application, configure models, datasources and middleware.
 // Sub-apps like REST API are mounted via boot scripts.
-boot(app, __dirname, function(err) {
+boot(app, {
+  'appRootDir': __dirname,
+  'bootDirs': [
+    __dirname + '/boot',
+    __dirname + '/boot/init',
+    __dirname + '/boot/controllers'
+  ],
+  'bootScripts': []
+}, function(err) {
   if (err) throw err;
 
   // start the server if `$ node server.js`
