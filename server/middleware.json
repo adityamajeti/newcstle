@@ -31,7 +31,14 @@
     }
   },
   "session": {},
-  "auth": {},
+  "auth": {
+    "./middleware/auth": {
+      "params": {},
+      "paths": [
+        "${restApiRoot}"
+      ]
+    }
+  },
   "parse": {},
   "routes": {
     "loopback#rest": {
