@@ -14,13 +14,10 @@
       "type": "string",
       "required": true
     },
-    "realm": {
+    "tenantId": {
       "type": "string",
-      "required": true
-    },
-    "status": {
-      "type": "string",
-      "required": true
+      "required": true,
+      "id": true
     },
     "tags": {
       "type": [
@@ -57,75 +54,6 @@
       "keyThrough": "domainId"
     }
   },
-  "acls": [
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "$unauthenticated",
-      "permission": "DENY",
-      "property": "*"
-    },
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "admin",
-      "permission": "ALLOW",
-      "property": "*"
-    },
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "$owner",
-      "permission": "ALLOW"
-    },
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "OrganizationAdmin",
-      "permission": "ALLOW",
-      "property": [
-        "findById",
-        "__get__users",
-        "__findById__users",
-        "__count__users",
-        "__create__users",
-        "__updateById__users",
-        "__destroyById__users",
-        "__get__regions",
-        "__findById__regions",
-        "__count__regions",
-        "__create__regions",
-        "__updateById__regions",
-        "__destroyById__regions",
-        "__get__domains",
-        "__findById__domains",
-        "__count__domains",
-        "__link__domains",
-        "__unlink__domains",
-        "__exists__domains",
-        "__get__regions",
-        "__findById__regions",
-        "__count__regions",
-        "__create__regions",
-        "__updateById__regions",
-        "__destroyById__regions"
-      ]
-    },
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "SystemEngineer",
-      "permission": "ALLOW",
-      "property": [
-        "findById",
-        "__get__domains",
-        "__findById__domains",
-        "__count__domains",
-        "__get__regions",
-        "__findById__regions",
-        "__count__regions"
-      ]
-    }
-  ],
+  "acls": [],
   "methods": {}
 }

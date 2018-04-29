@@ -18,23 +18,23 @@
     "public": false
   },
   "AccessToken": {
-    "dataSource": "es",
+    "dataSource": "db",
     "public": false
   },
   "ACL": {
-    "dataSource": "es",
-    "public": true
+    "dataSource": "db",
+    "public": false
   },
   "RoleMapping": {
-    "dataSource": "es",
+    "dataSource": "db",
     "public": false,
     "options": {
       "strictObjectIDCoercion": true
     }
   },
   "Role": {
-    "dataSource": "es",
-    "public": true
+    "dataSource": "db",
+    "public": false
   },
   "Users": {
     "dataSource": "es",
@@ -46,7 +46,7 @@
   },
   "Region": {
     "dataSource": "es",
-    "public": true
+    "public": false
   },
   "Domain": {
     "dataSource": "es",

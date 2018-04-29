@@ -14,10 +14,6 @@
       "type": "string",
       "required": true
     },
-    "status": {
-      "type": "string",
-      "required": true
-    },
     "tags": {
       "type": [
         "string"
@@ -26,25 +22,6 @@
   },
   "validations": [],
   "relations": {},
-  "acls": [
-    {
-      "principalType": "ROLE",
-      "principalId": "$unauthenticated",
-      "permission": "DENY"
-    },
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "admin",
-      "permission": "ALLOW",
-      "property": "*"
-    },
-    {
-      "accessType": "READ",
-      "principalType": "ROLE",
-      "principalId": "$authenticated",
-      "permission": "ALLOW"
-    }
-  ],
+  "acls": [],
   "methods": {}
 }

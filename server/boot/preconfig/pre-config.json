@@ -19,15 +19,5 @@
       "name": "WasteManagement",
       "status": "active"
     }
-  ],
-  "Role": [{
-      "name": "admin"
-    },
-    {
-      "name": "OrganizationAdmin"
-    },
-    {
-      "name": "SystemEngineer"
-    }
   ]
 }
