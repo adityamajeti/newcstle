@@ -29,49 +29,17 @@
       },
       "description": {
         "type": "text",
-        "index": true
-      },
-      "roleId": {
-        "type": "keyword",
-        "index": true
-      },
-      "principalId": {
-        "type": "keyword",
-        "index": true
-      },
-      "principalType": {
-        "type": "keyword",
-        "index": true
-      },
-      "model": {
-        "type": "keyword",
-        "index": true
-      },
-      "property": {
-        "type": "keyword",
-        "index": true
-      },
-      "accessType": {
-        "type": "keyword",
-        "index": true
-      },
-      "permission": {
-        "type": "keyword",
-        "index": true
+        "index": false
       },
       "userId": {
         "type": "keyword",
         "index": true
       },
-      "ttl": {
-        "type": "long",
-        "index": true
-      },
-      "realm": {
+      "email": {
         "type": "keyword",
         "index": true
       },
-      "email": {
+      "username": {
         "type": "keyword",
         "index": true
       },
@@ -104,10 +72,6 @@
         "index": true
       },
       "created": {
-        "type": "date",
-        "index": true
-      },
-      "modified": {
         "type": "date",
         "index": true
       },

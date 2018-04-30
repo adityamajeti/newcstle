@@ -1,10 +1,11 @@
-module.exports = function(Model, options) {
+'use strict';
+module.exports = (Model, options) => {
   // Model is the model class
   // options is an object containing the config properties from model definition
-  Model.defineProperty('created', { type: "date"});
-  Model.defineProperty('lastUpdated', { type: "date"});
+  Model.defineProperty('created', { type: 'date'});
+  Model.defineProperty('lastUpdated', { type: 'date'});
   // before Save
-  Model.observe("before save", function(ctx, next) {
+  Model.observe('before save', (ctx, next) => {
     if (ctx.isNewInstance) {
       ctx.instance.created = new Date();
       ctx.instance.lastUpdated = new Date();
@@ -13,4 +14,4 @@ module.exports = function(Model, options) {
     }
     next();
   });
-}
+};

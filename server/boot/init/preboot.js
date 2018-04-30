@@ -1,20 +1,20 @@
-module.exports = function(app) {
-  var Users = app.models.Users,
-    _ = require('underscore');
+'use strict';
+module.exports = (app) => {
+  const Users = app.models.Users;
+  const  _ = require('underscore');
 
-  //Pre Configurations
-  var preConfig = require('../preconfig/pre-config.js')(app);
+  // Pre Configurations
+  const preConfig = require('../preconfig/pre-config.js')(app);
 
-  function preload() {
+  const preload = () => {
     // if (!!process.env.cetanaINIT) {
-    preConfig.DomainPreConfig(function() {
-      // 
+    preConfig.DomainPreConfig(() => {
+      //
     });
     // }
   };
 
-  Users.getDataSource().once("connected", function() {
+  Users.getDataSource().once('connected', () => {
     preload();
   });
-  
-}
+};

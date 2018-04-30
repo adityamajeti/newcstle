@@ -1,39 +1,39 @@
+'use strict';
 // main configuration file
-module.exports = function(app) {
+module.exports = (app) => {
   const {
     Users,
     Domain,
-    Organization
-  } = app.models,
-    asyncLib = require('async'),
-    _ = require('underscore');
-
-  var ref = this,
-    preConfig = require('./pre-config.json');
+    Organization,
+  } = app.models;
+  const asyncLib = require('async');
+  const _ = require('underscore');
+  const ref = this;
+  const preConfig = require('./pre-config.json');
 
   // Pre-configuration add Device Vendors and Types by default
 
-  ref.DomainPreConfig = function(cb) {
-    asyncLib.each(preConfig.Domain, function(dmn, next) {
+  ref.DomainPreConfig = (cb) => {
+    asyncLib.each(preConfig.Domain, (dmn, next) => {
       Domain.findOne({
-        "where": {
-          "name": dmn.name
-        }
-      }, function(err, rls) {
+        'where': {
+          'name': dmn.name,
+        },
+      }, (err, rls) => {
         if (rls) {
-          _.each(dmn, function(v, k) {
+          _.each(dmn, (v, k) => {
             rls[k] = v;
           });
-          rls.save(function() {
+          rls.save(() => {
             next();
           });
         } else {
-          Domain.create(dmn, function() {
+          Domain.create(dmn, () => {
             next();
           });
         }
       });
-    }, function(er) {
+    }, (er) => {
       cb(null, {});
     });
   };

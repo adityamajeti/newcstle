@@ -1,8 +1,7 @@
-module.exports = function(app) {
-
+'use strict';
+module.exports = (app) => {
   const {
     Organization,
-    Users
+    Users,
   } = app.models;
-
 };
