@@ -5,7 +5,7 @@ module.exports = (options) => {
   return (req, res, next) => {
     if(process.env.ATDEV && process.env.ATDEV == "dev") {
       req.UserInfo = {
-        "roles": ["admin", "OrganizationAdmin", "SystemEngineer"],
+        "roles": ["admin", "ORGANIZATION_ADMIN", "SYSTEM_ENGINEER"],
         "username": "userzero@quantela.com",
         "firstname": "Bharath",
         "lastname": "Reddy",
