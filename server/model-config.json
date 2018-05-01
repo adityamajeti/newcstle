@@ -52,6 +52,10 @@
     "dataSource": "es",
     "public": true
   },
+  "EntityType": {
+    "dataSource": "es",
+    "public": true
+  },
   "OrganizationDomain": {
     "dataSource": "es",
     "public": false
