@@ -9,6 +9,100 @@ module.exports = (app) => {
     Domain,
   } = app.models;
 
+  // tenantId injector
+  /*const methodACLInjector = {};
+
+  methodACLInjector['belongsTo'] = {}
+
+  methodACLInjector['belongsTo']['find'] = (field, value, filter) => {
+    const injectField = {};
+    injectField[field] = value;
+    if (Object.keys(filter).length && filter.hasOwnProperty('where')) {
+      if (filter.where.hasOwnProperty('and')) {
+        let findField = _.find(filter.where.and, (val, key) => {
+          return !!val[field];
+        });
+        (findField) ? _.extend(findField, injectField): filter.where.and.push(injectField);
+      } else if (filter.where.hasOwnProperty('or')) {
+        let findField = _.find(filter.where.or, (val, key) => {
+          return !!val[field];
+        });
+        (findField) ? _.extend(findField, injectField): filter.where.or.push(injectField);
+      } else {
+        filter.where = { 'and': [injectField, filter.where] };
+      }
+    } else if (!filter.hasOwnProperty('where')) {
+      filter.where = injectField;
+    } else {
+      filter = { 'where': injectField };
+    }
+    return filter;
+  };
+
+  methodACLInjector['belongsTo']['findOne'] = methodACLInjector['belongsTo']['find'];
+
+  methodACLInjector['belongsTo']['findById'] = (field, value, model, idField, idValue, next) => {
+    const injectField = {};
+    injectField[field] = value;
+    const modelField = {};
+    modelField[idField] = idValue;
+    model.findOne({
+      'where': {
+        'and': [injectField, modelField]
+      }
+    }, (err, instance) => {
+      if (instance) {
+        next();
+      } else {
+        const error = new Error('NOT_FOUND');
+        error.statusCode = 404;
+        next(error);
+      }
+    });
+  };
+
+  methodACLInjector['belongsTo']['exists'] = methodACLInjector['belongsTo']['findById'];
+
+  methodACLInjector['belongsTo']['count'] = (field, value, whereFilter) => {
+    const injectField = {};
+    injectField[field] = value;
+    if (Object.keys(whereFilter).length) {
+      if (whereFilter.hasOwnProperty('and')) {
+        let findField = _.find(whereFilter.and, (val, key) => {
+          return !!val[field];
+        });
+        (findField) ? _.extend(findField, injectField): whereFilter.and.push(injectField);
+      } else if (whereFilter.hasOwnProperty('or')) {
+        let findField = _.find(whereFilter.or, (val, key) => {
+          return !!val[field];
+        });
+        (findField) ? _.extend(findField, injectField): whereFilter.or.push(injectField);
+      } else {
+        whereFilter = { 'and': [injectField, whereFilter] };
+      }
+    } else {
+      whereFilter = injectField;
+    }
+    return whereFilter;
+  };
+
+  const relations = {};
+
+  relations['Dashboard'] = {
+    'tenant': {
+      type: 'belongsTo',
+      foreignKey: 'tenantId'
+    },
+    'user': {
+      type: 'hasManyThrough',
+      throughModel: 'UserDashboards',
+      foreignKey: 'userId',
+      keyThrough: 'dashboardId'
+    }
+  }*/
+
+  // ACL Validator for methods
+
   const TenantACLValidator = (model, role, ACLChecker, method) => {
     if (typeof ACLChecker != 'undefined' && model) {
       model.beforeRemote(method, (ctx, instance, next) => {
