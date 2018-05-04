@@ -1,98 +1,23 @@
-'use strict';
-module.exports = (app) => {
-  const {
-    Organization,
-    Users,
-  } = app.models;
+var request = require('request');
 
-   Users.addUser = (data, req, cb) => {
+var template = require('../util/templates');
+var confs = require('../../global-config.json');
 
-   
+
+module.exports = function(app) {
+  
+   const {
+    Role
+   } = app.models;
+
+   Role.addRole = (data, req, cb) => {
+
+   let authuser = confs.Super_ADMIN_USER.authuser;
+   let authpassword = confs.Super_ADMIN_PASSWORD.authpassword;
    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+   let auth = "Basic " + new Buffer(authuser + ":" + authpassword).toString("base64");
    let rolename = data.rolename;
-   let claimkeys=data.userattributes;
-   let authdetails =data.auth;
-   let username =data.loginname;
-   let password =data.password;
-   console.log(authdetails[0].authuser);
-   console.log(authdetails[1].authpassword);
-
-    let auth = "Basic " + new Buffer(authdetails[0].authuser + ":" + authdetails[1].authpassword).toString("base64");
-   
-
-   
-   let xml = template.createUserXml(rolename,claimkeys,username,password);
-   
-    var options = {
-        url: confs.User.url,
-        method: 'POST',
-        body: xml,
-        headers: {
-            'Content-Type': 'text/xml',
-            'Accept-Encoding': 'gzip,deflate',
-            'Content-Length': xml.length,
-            'SOAPAction': confs.addUser.soapaction,
-            'Authorization': auth
-        }
-    };
-
-
-    let callback = (error, response, body) => {
-
-        if (!error && (response.statusCode == 200|| response.statusCode == 202)) {
-            //console.log('Raw result', body);
-            var resdata = {
-                "message": "User created successfully",
-
-            }
-            cb(null, resdata);
-
-        } else if (response.statusCode == 500) {
-
-            var xml2js = require('xml2js');
-            var parser = new xml2js.Parser({
-                explicitArray: false,
-                tagNameProcessors: [xml2js.processors.stripPrefix]
-            });
-            parser.parseString(body, (err, result) => {
-                console.log(result.Envelope.Body.Fault.faultstring);
-
-                var resdata = {
-                    "errorcode": response.statusCode,
-                    "message": result.Envelope.Body.Fault.faultstring
-
-                }
-                cb(resdata);
-            });
-
-        } else {
-            var resdata = {
-                "errorcode": response.statusCode,
-                "message": "Internal server error"
-
-            }
-             cb(resdata);
-
-        }
-        console.log('E', response.statusCode, response.statusMessage);
-    };
-    request(options, callback);
-  
-  
-
-
-  }
-
-
- Users.deleteUser = (data, req, cb) => {
-
-   let authuser = confs.Super_ADMIN_USER.authuser;
-   let authpassword = confs.Super_ADMIN_PASSWORD.authpassword;
-   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-   let auth = "Basic " + new Buffer(authuser + ":" + authpassword).toString("base64");
-   let username =data.username;
-   
-     let xml = template.deleteUserXml(username); 
+   let xml = template.getaddRoleXml(rolename);
 
 
     var options = {
@@ -103,78 +28,7 @@ module.exports = (app) => {
             'Content-Type': 'text/xml',
             'Accept-Encoding': 'gzip,deflate',
             'Content-Length': xml.length,
-            'SOAPAction': confs.deleteUser.soapaction,
-            'Authorization': auth
-        }
-    };
-
-
-    let callback = (error, response, body) => {
-
-        if (!error && (response.statusCode == 200|| response.statusCode == 202)) {
-            //console.log('Raw result', body);
-            var resdata = {
-                "message": "User deleted successfully",
-
-            }
-            cb(null,resdata);
-
-        } else if (response.statusCode == 500) {
-
-            var xml2js = require('xml2js');
-            var parser = new xml2js.Parser({
-                explicitArray: false,
-                tagNameProcessors: [xml2js.processors.stripPrefix]
-            });
-            parser.parseString(body, (err, result) => {
-                console.log(result.Envelope.Body.Fault.faultstring);
-
-                var resdata = {
-                    "errorcode": response.statusCode,
-                    "message": result.Envelope.Body.Fault.faultstring
-
-                }
-                cb(resdata);
-            });
-
-        } else {
-            var resdata = {
-                "errorcode": response.statusCode,
-                "message": "Internal server error"
-
-            }
-            cb(resdata);
-
-        }
-        console.log('E', response.statusCode, response.statusMessage);
-    };
-    request(options, callback);   
-
-
- }
-
-  Users.updateCredential = (data, req, cb) => {
-
-   let authuser = confs.Super_ADMIN_USER.authuser;
-   let authpassword = confs.Super_ADMIN_PASSWORD.authpassword;
-   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-   let auth = "Basic " + new Buffer(authuser + ":" + authpassword).toString("base64");
-   let username =data.username;
-   let oldpassword =data.oldpassword;
-   let newpassword =data.newpassword
-
-   let xml = template.getupdateCredentialsXml(username,oldpassword,newpassword);
-
-
-   var options = {
-        url: confs.User.url,
-        method: 'POST',
-        body: xml,
-        headers: {
-            'Content-Type': 'text/xml',
-            'Accept-Encoding': 'gzip,deflate',
-            'Content-Length': xml.length,
-            'SOAPAction': confs.updateCredentials.soapaction,
+            'SOAPAction': confs.addRole.soapaction,
             'Authorization': auth
         }
     };
@@ -185,7 +39,78 @@ module.exports = (app) => {
         if (!error && (response.statusCode == 200 ||response.statusCode == 202)) {
             //console.log('Raw result', body);
             var resdata = {
-                "message": "Password updated successfully",
+                "message": "Roles added successfully",
+
+            }
+             cb(null, resdata);
+
+        } else if (response.statusCode == 500) {
+
+            var xml2js = require('xml2js');
+            var parser = new xml2js.Parser({
+                explicitArray: false,
+                tagNameProcessors: [xml2js.processors.stripPrefix]
+            });
+            parser.parseString(body, (err, result) => {
+                console.log(result.Envelope.Body.Fault.faultstring);
+
+                var resdata = {
+                    "errorcode": response.statusCode,
+                    "message": result.Envelope.Body.Fault.faultstring
+
+                }
+                 cb(resdata);
+            });
+
+        } else {
+            var resdata = {
+                "errorcode": response.statusCode,
+                "message": "Internal server error"
+
+            }
+             cb(resdata);
+
+        }
+        console.log('E', response.statusCode, response.statusMessage);
+    };
+    request(options, callback);
+
+
+   }
+
+
+   Role.deleteRole = (data, req, cb) => {
+
+
+   	process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
+   let authuser = confs.Super_ADMIN_USER.authuser;
+   let authpassword = confs.Super_ADMIN_PASSWORD.authpassword;
+   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+   let auth = "Basic " + new Buffer(authuser + ":" + authpassword).toString("base64");
+   let rolename = data.rolename;
+    let xml = template.deleteRoleXml(rolename);
+
+    var options = {
+        url: confs.User.url,
+        method: 'POST',
+        body: xml,
+        headers: {
+            'Content-Type': 'text/xml',
+            'Accept-Encoding': 'gzip,deflate',
+            'Content-Length': xml.length,
+            'SOAPAction': confs.deleteRole.soapaction,
+            'Authorization': auth
+        }
+    };
+
+
+    let callback = (error, response, body) => {
+
+        if (!error && (response.statusCode == 200 ||response.statusCode == 202)) {
+            //console.log('Raw result', body);
+            var resdata = {
+                "message": "Roles deleted successfully",
 
             }
             cb(null,resdata);
@@ -223,21 +148,21 @@ module.exports = (app) => {
 
 
 
-  }
 
-  Users.updateCredentialByAdmin = (data, req, cb) => {
+   }
+
+    Role.getAllRoles = (data, req, cb) => {
+
+
+   	process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
    let authuser = confs.Super_ADMIN_USER.authuser;
    let authpassword = confs.Super_ADMIN_PASSWORD.authpassword;
    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
    let auth = "Basic " + new Buffer(authuser + ":" + authpassword).toString("base64");
-   let username =data.username;
-   let newpassword =data.newpassword
+   let xml = template.getallRolesXml();
 
-   let xml = template.getupdateCredentialsByAdminXml(username,newpassword);
-
-
-   var options = {
+    var options = {
         url: confs.User.url,
         method: 'POST',
         body: xml,
@@ -245,21 +170,49 @@ module.exports = (app) => {
             'Content-Type': 'text/xml',
             'Accept-Encoding': 'gzip,deflate',
             'Content-Length': xml.length,
-            'SOAPAction': confs.updateCredentialByAdmin.soapaction,
+            'SOAPAction': confs.getRoleNames.soapaction,
             'Authorization': auth
         }
     };
 
 
     let callback = (error, response, body) => {
-
-        if (!error && (response.statusCode == 200|| response.statusCode == 202)) {
+        //console.log(response);
+        if (!error && response.statusCode == 200) {
             //console.log('Raw result', body);
-            var resdata = {
-                "message": "Password updated successfully",
+            var xml2js = require('xml2js');
+            var parser = new xml2js.Parser({
+                explicitArray: false,
+                tagNameProcessors: [xml2js.processors.stripPrefix]
+            });
 
-            }
-            cb(null,resdata);
+            parser.parseString(body, (err, result) => {
+
+                var arraydata = [];
+
+                for (var inx = 0; inx < result.Envelope.Body.getRoleNamesResponse.return.length; inx++) {
+
+                    var rolenames = result.Envelope.Body.getRoleNamesResponse.return[inx];
+                   
+                    arraydata.push({
+                        rolenames: rolenames
+                       
+                    });
+
+                    if (inx == result.Envelope.Body.getRoleNamesResponse.return.length - 1) {
+
+                       cb(null,arraydata);
+
+                    }
+
+
+                }
+
+
+
+            });
+
+
 
         } else if (response.statusCode == 500) {
 
@@ -285,7 +238,7 @@ module.exports = (app) => {
                 "message": "Internal server error"
 
             }
-           cb(resdata);
+             cb(resdata);
 
         }
         console.log('E', response.statusCode, response.statusMessage);
@@ -294,19 +247,23 @@ module.exports = (app) => {
 
 
 
-  }
+     }
 
 
-  Users.getUserList = (data, req, cb) => {
+
+   Role.getAllUserRoles = (data, req, cb) => {
+
+
+   	process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
    let authuser = confs.Super_ADMIN_USER.authuser;
    let authpassword = confs.Super_ADMIN_PASSWORD.authpassword;
    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
    let auth = "Basic " + new Buffer(authuser + ":" + authpassword).toString("base64");
-   let limit =data.limit;
-   let xml = template.getuserListXml(limit);
+   var username =data.username;
+   let xml = template.getAllUserRolesXml(username);
 
-   var options = {
+    var options = {
         url: confs.User.url,
         method: 'POST',
         body: xml,
@@ -314,7 +271,7 @@ module.exports = (app) => {
             'Content-Type': 'text/xml',
             'Accept-Encoding': 'gzip,deflate',
             'Content-Length': xml.length,
-            'SOAPAction': confs.listUsers.soapaction,
+            'SOAPAction': confs.getRoleListOfUser.soapaction,
             'Authorization': auth
         }
     };
@@ -333,24 +290,144 @@ module.exports = (app) => {
             parser.parseString(body, (err, result) => {
 
                 var arraydata = [];
+               
+               if(Array.isArray(result.Envelope.Body.getRoleListOfUserResponse.return)){    
+             
+                for (var inx = 0; inx < result.Envelope.Body.getRoleListOfUserResponse.return.length; inx++) {
 
-                for (var inx = 0; inx < result.Envelope.Body.listUsersResponse.return.length; inx++) {
+                    var rolenames = result.Envelope.Body.getRoleListOfUserResponse.return[inx];
+                   
+                    arraydata.push({
+                        rolenames: rolenames
+                       
+                    });
 
-                    var usernames = result.Envelope.Body.listUsersResponse.return[inx];
+                    if (inx == result.Envelope.Body.getRoleListOfUserResponse.return.length - 1) {
+
+                        cb(null,arraydata);
+
+                    }
+
+
+                }
+            }else{
+            	cb(result.Envelope.Body.getRoleListOfUserResponse.return);
+
+            }
+
+
+
+            });
+
+
+
+        } else if (response.statusCode == 500) {
+
+            var xml2js = require('xml2js');
+            var parser = new xml2js.Parser({
+                explicitArray: false,
+                tagNameProcessors: [xml2js.processors.stripPrefix]
+            });
+            parser.parseString(body, (err, result) => {
+                console.log(result.Envelope.Body.Fault.faultstring);
+
+                var resdata = {
+                    "errorcode": response.statusCode,
+                    "message": result.Envelope.Body.Fault.faultstring
+
+                }
+                cb(resdata);
+            });
+
+        } else {
+            var resdata = {
+                "errorcode": response.statusCode,
+                "message": "Internal server error"
+
+            }
+            cb(resdata);
+
+        }
+        console.log('E', response.statusCode, response.statusMessage);
+    };
+    request(options, callback);
+
+
+
+
+     }
+
+
+
+   Role.getAllRoleUsers = (data, req, cb) => {
+
+
+   	process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
+   let authuser = confs.Super_ADMIN_USER.authuser;
+   let authpassword = confs.Super_ADMIN_PASSWORD.authpassword;
+   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+   let auth = "Basic " + new Buffer(authuser + ":" + authpassword).toString("base64");
+   var rolename =data.rolename;
+   let xml = template.getAllUserForRolesXml(rolename);
+
+    var options = {
+        url: confs.User.url,
+        method: 'POST',
+        body: xml,
+        headers: {
+            'Content-Type': 'text/xml',
+            'Accept-Encoding': 'gzip,deflate',
+            'Content-Length': xml.length,
+            'SOAPAction': confs.getUserListOfRole.soapaction,
+            'Authorization': auth
+        }
+    };
+
+
+    let callback = (error, response, body) => {
+        //console.log(response);
+        if (!error && response.statusCode == 200) {
+            //console.log('Raw result', body);
+            var xml2js = require('xml2js');
+            var parser = new xml2js.Parser({
+                explicitArray: false,
+                tagNameProcessors: [xml2js.processors.stripPrefix]
+            });
+
+            parser.parseString(body, (err, result) => {
+
+                var arraydata = [];
+                console.log(result.Envelope.Body.getUserListOfRoleResponse.return.length);
+
+                if(result.Envelope.Body.getUserListOfRoleResponse.return!=undefined){
+                      
+                  if(Array.isArray(result.Envelope.Body.getUserListOfRoleResponse.return)){    
+                for (var inx = 0; inx < result.Envelope.Body.getUserListOfRoleResponse.return.length; inx++) {
+
+                    var usernames = result.Envelope.Body.getUserListOfRoleResponse.return[inx];
                    
                     arraydata.push({
                         usernames: usernames
                        
                     });
 
-                    if (inx == result.Envelope.Body.listUsersResponse.return.length - 1) {
- 
-                        cb(null,arraydata);
+                    if (inx == result.Envelope.Body.getUserListOfRoleResponse.return.length - 1) {
+
+                         cb(null,arraydata);
 
                     }
 
 
                 }
+            }else{
+              cb(null,result.Envelope.Body.getUserListOfRoleResponse.return);
+
+            }
+            }else{
+                  cb(null,"No Users Assigned to this role");
+
+            }
 
 
 
@@ -373,7 +450,7 @@ module.exports = (app) => {
                     "message": result.Envelope.Body.Fault.faultstring
 
                 }
-                cb(resdata);
+                 cb(resdata);
             });
 
         } else {
@@ -382,137 +459,32 @@ module.exports = (app) => {
                 "message": "Internal server error"
 
             }
-            cb(resdata);
-
+             cb(resdata);
         }
         console.log('E', response.statusCode, response.statusMessage);
     };
     request(options, callback);
 
 
-   
-   }
 
 
-   Users.getUserProfile = (data, req, cb) => {
+     }
 
-   let authdetails =data.auth;
-   let username =data.username;
-   let authuser = authdetails[0].authuser;
-   let authpassword = authdetails[1].authpassword;
+
+  Role.updateUserRole = (data, req, cb) => {
+
+
+   	process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
+   let authuser = confs.Super_ADMIN_USER.authuser;
+   let authpassword = confs.Super_ADMIN_PASSWORD.authpassword;
    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
    let auth = "Basic " + new Buffer(authuser + ":" + authpassword).toString("base64");
-   let xml = template.getUserProfile(username);
+   let username = data.username;
+   let oldrole =data.oldrole;
+   let newrole =data.newrole;
+    let xml = template.updateUserRoleXml(username,oldrole,newrole);
 
-   var options = {
-        url: confs.Profile.url,
-        method: 'POST',
-        body: xml,
-        headers: {
-            'Content-Type': 'text/xml',
-            'Accept-Encoding': 'gzip,deflate',
-            'Content-Length': xml.length,
-            'SOAPAction': confs.getProfile.soapaction,
-            'Authorization': auth
-        }
-    };
-    console.log(options);
-
-    let callback = (error, response, body) => {
-        //console.log(response);
-        if (!error && response.statusCode == 200) {
-            //console.log('Raw result', body);
-            var xml2js = require('xml2js');
-            var parser = new xml2js.Parser({
-                explicitArray: false,
-                tagNameProcessors: [xml2js.processors.stripPrefix]
-            });
-
-            parser.parseString(body, (err, result) => {
-
-                var arraydata = [];
-                console.log(result.Envelope.Body.getUserProfileResponse.return.fieldValues.length);
-
-                for (var inx = 0; inx < result.Envelope.Body.getUserProfileResponse.return.fieldValues.length; inx++) {
-
-                    var usernames = result.Envelope.Body.getUserProfileResponse.return.fieldValues[inx].displayName;
-                    var value = result.Envelope.Body.getUserProfileResponse.return.fieldValues[inx].fieldValue;
-                     var check =value.$;
-                    if(check != undefined)
-                    {
-                        value="";
-                    }
-                    
-                    arraydata.push({
-                        fieldname: usernames,
-                        fieldvalue:value
-                       
-                    });
-
-                    if (inx == result.Envelope.Body.getUserProfileResponse.return.fieldValues.length - 1) {
- 
-                        cb(null,arraydata);
-
-                    }
-
-
-                }
-
-
-
-            });
-
-
-
-        } else if (response.statusCode == 500) {
-
-            var xml2js = require('xml2js');
-            var parser = new xml2js.Parser({
-                explicitArray: false,
-                tagNameProcessors: [xml2js.processors.stripPrefix]
-            });
-            parser.parseString(body, (err, result) => {
-                console.log(result.Envelope.Body.Fault.faultstring);
-
-                var resdata = {
-                    "errorcode": response.statusCode,
-                    "message": result.Envelope.Body.Fault.faultstring
-
-                }
-                cb(resdata);
-            });
-
-        } else {
-            var resdata = {
-                "errorcode": response.statusCode,
-                "message": "Internal server error"
-
-            }
-            cb(resdata);
-
-        }
-        console.log('E', response.statusCode, response.statusMessage);
-    };
-    request(options, callback);
-
-
-   
-   }
-
- Users.addUserClaims = (data, req, cb) => {
-
-   
-   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-  
-   let claimkeys=data.userattributes;
-   let authdetails =data.auth;
-   let username =data.username;
-   let auth = "Basic " + new Buffer(authdetails[0].authuser + ":" + authdetails[1].authpassword).toString("base64");
-   
-
-   
-   let xml = template.createUserClaimsXml(claimkeys,username);
-   
     var options = {
         url: confs.User.url,
         method: 'POST',
@@ -521,22 +493,21 @@ module.exports = (app) => {
             'Content-Type': 'text/xml',
             'Accept-Encoding': 'gzip,deflate',
             'Content-Length': xml.length,
-            'SOAPAction': confs.addUserClaim.soapaction,
+            'SOAPAction': confs.updateUserRole.soapaction,
             'Authorization': auth
         }
     };
-   
-     
+
 
     let callback = (error, response, body) => {
 
-        if (!error && (response.statusCode == 200|| response.statusCode == 202)) {
+        if (!error && (response.statusCode == 200 ||response.statusCode == 202)) {
             //console.log('Raw result', body);
             var resdata = {
-                "message": "User claim added successfully",
+                "message": "Roles updated successfully",
 
             }
-            cb(null, resdata);
+            cb(null,resdata);
 
         } else if (response.statusCode == 500) {
 
@@ -562,92 +533,18 @@ module.exports = (app) => {
                 "message": "Internal server error"
 
             }
-             cb(resdata);
+            cb(resdata);
 
         }
         console.log('E', response.statusCode, response.statusMessage);
     };
     request(options, callback);
-  
-  
+
+   }
 
 
-  }
 
 
-   Users.updateUserProfile = (data, req, cb) => {
-
-   
-   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-  
-   let claimkeys=data.userattributes;
-   let authdetails =data.auth;
-   let username =data.username;
-   let auth = "Basic " + new Buffer(authdetails[0].authuser + ":" + authdetails[1].authpassword).toString("base64");
-   
-
-   
-   let xml = template.updateProfileXml(claimkeys,username);
-   
-    var options = {
-        url: confs.Profile.url,
-        method: 'POST',
-        body: xml,
-        headers: {
-            'Content-Type': 'text/xml',
-            'Accept-Encoding': 'gzip,deflate',
-            'Content-Length': xml.length,
-            'SOAPAction': confs.updateProfile.soapaction,
-            'Authorization': auth
-        }
-    };
-   
-     console.log(options);
-
-    let callback = (error, response, body) => {
-           console.log(response.statusCode);
-        if (!error && (response.statusCode == 200|| response.statusCode == 202)) {
-            //console.log('Raw result', body);
-            var resdata = {
-                "message": "User profile updated successfully",
-
-            }
-            cb(null, resdata);
-
-        } else if (response.statusCode == 500) {
-
-            var xml2js = require('xml2js');
-            var parser = new xml2js.Parser({
-                explicitArray: false,
-                tagNameProcessors: [xml2js.processors.stripPrefix]
-            });
-            parser.parseString(body, (err, result) => {
-                console.log(result.Envelope.Body.Fault.faultstring);
-
-                var resdata = {
-                    "errorcode": response.statusCode,
-                    "message": result.Envelope.Body.Fault.faultstring
-
-                }
-                cb(resdata);
-            });
-
-        } else {
-            var resdata = {
-                "errorcode": response.statusCode,
-                "message": "Internal server error"
-
-            }
-             cb(resdata);
-
-        }
-        console.log('E', response.statusCode, response.statusMessage);
-    };
-    request(options, callback);
-  
-  
 
 
-  }
-
-};
+	}

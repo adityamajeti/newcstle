@@ -1,0 +1,132 @@
+{
+   "Tenant":{
+   "url": "https://172.16.1.56:9443/services/TenantMgtAdminService.TenantMgtAdminServiceHttpsSoap12Endpoint"
+   	},
+  "addTenant": {
+        "soapaction": "urn:addTenant"
+    },
+    "getTenant": {
+        "soapaction": "urn:getTenant"
+    },
+    "retriveTenant":{
+    "soapaction": "urn:retrieveTenants"
+
+    },
+    "updateTenant":{
+    "soapaction": "urn:updateTenant"
+
+    },
+    "deleteTenant":{
+    "soapaction": "urn:deleteTenant"
+
+    },
+    "activateTenant":{
+    "soapaction": "urn:activateTenant"
+
+    },
+    "deactivateTenant":{
+    "soapaction": "urn:deactivateTenant"
+
+    },
+    "User":{
+      "url":"https://172.16.1.56:9443/services/RemoteUserStoreManagerService.RemoteUserStoreManagerServiceHttpsSoap12Endpoint"
+    },
+    "addUser":{
+    "soapaction": "urn:addUser"
+
+    },
+    "deleteUser":{
+    "soapaction": "urn:deleteUser"
+
+    },
+    "addRole":{
+    "soapaction": "urn:addRole"
+
+    },
+    "deleteRole":{
+    "soapaction": "urn:deleteRole"
+
+    },
+     "getTenantId":{
+    "soapaction": "urn:getTenantId"
+
+    },
+    "updateCredentials":{
+    "soapaction": "urn:updateCredential"
+
+    },
+    "updateCredentialByAdmin":{
+    "soapaction": "urn:updateCredentialByAdmin"
+
+    },
+    "getRoleNames":{
+    "soapaction": "urn:getRoleNames"
+
+    },
+    "getRoleListOfUser":{
+    "soapaction": "urn:getRoleListOfUser"
+
+    },
+    "getUserListOfRole":{
+    	 "soapaction": "urn:getUserListOfRole"
+    	
+    },
+     "listUsers":{
+    	 "soapaction": "urn:listUsers"
+    	
+    },
+    "isExistingRole":{
+    	 "soapaction": "urn:isExistingRole"
+    	
+    },
+    "isExistingUser":{
+    	 "soapaction": "urn:isExistingUser"
+    	
+    },
+    "updateUserRole":{
+         "soapaction": "urn:updateRoleListOfUser"
+        
+    },
+    "Super_User_Permission":{
+     "Role":"SUPER_ADMIN"
+    },
+   "Organization_Permission":{
+     "Role":"ORGANIZATIONADMIN"
+    },
+    "Engineer_Permission":{
+     "Role":"SYSTEMENGINEER"
+    },
+    "Super_ADMIN_USER":{
+     "authuser":"admin"
+    },
+     "Super_ADMIN_PASSWORD":{
+     "authpassword":"admin"
+    },
+    "Roles": [{
+      "name": "ORGANIZATIONADMIN"
+    },
+    {
+      "name": "SYSTEMENGINEER"
+   }
+    
+  ],
+  "Profile":{
+      "url":"https://172.16.1.56:9443/services/UserProfileMgtService.UserProfileMgtServiceHttpsSoap12Endpoint"
+    },
+     "getProfile":{
+         "soapaction": "urn:getUserProfile"
+        
+    },
+    "addUserClaim":{
+         "soapaction": "urn:addUserClaimValue"
+        
+    },
+     "updateProfile":{
+         "soapaction": "urn:setUserProfile"
+        
+    }
+   
+
+  
+
+}

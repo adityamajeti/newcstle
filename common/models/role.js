@@ -1,38 +1,10 @@
 'use strict';
-module.exports = (Organization) => {
-  const _ = require('underscore');
-  const methodsToDisable = [
-    'create',
-    'updateAll',
-    'upsert',
-    'count',
-    'replaceById',
-    'replaceOrCreate',
-    'createChangeStream',
-    'upsertWithWhere',
-    'deleteById',
-    'prototype.patchAttributes',
-    'prototype.__create__domains',
-    'prototype.__delete__domains',
-    'prototype.__destroyById__domains',
-    'prototype.__updateById__domains',
-    'prototype.__create__users',
-    'prototype.__delete__users',
-    'prototype.__destroyById__users',
-    'prototype.__updateById__users',
-    'prototype.__get__users',
-    'prototype.__findById__users',
-    'prototype.__count__users',
-  ];
 
-  _.each(methodsToDisable, (method) => {
-    Organization.disableRemoteMethodByName(method);
-  });
+module.exports = function(Role) {
 
-
-  Organization.remoteMethod(
-    'addOrganization', {
-      description: "Add Organization",
+	Role.remoteMethod(
+    'addRole', {
+      description: "Add Role",
       accepts: [
       {
         arg: 'data',
@@ -48,12 +20,12 @@ module.exports = (Organization) => {
       }
       ],
       returns: {
-        arg: 'tenants',
+        arg: 'roles',
         type: 'object',
         root: true
       },
       http: {
-        path: '/addOrganization',
+        path: '/addRole',
         verb: 'post',
         status: 200,
         errorStatus: 400
@@ -63,9 +35,9 @@ module.exports = (Organization) => {
   );
 
 
-Organization.remoteMethod(
-    'getAllOrganizations', {
-      description: " Get All Organizations",
+  Role.remoteMethod(
+    'deleteRole', {
+      description: "Delete Role",
       accepts: [
       {
         arg: 'data',
@@ -81,12 +53,12 @@ Organization.remoteMethod(
       }
       ],
       returns: {
-        arg: 'tenants',
+        arg: 'roles',
         type: 'object',
         root: true
       },
       http: {
-        path: '/getAllOrganizations',
+        path: '/deleteRole',
         verb: 'post',
         status: 200,
         errorStatus: 400
@@ -95,10 +67,41 @@ Organization.remoteMethod(
  
   );
 
+   Role.remoteMethod(
+    'getAllRoles', {
+      description: "get All Role",
+      accepts: [
+      {
+        arg: 'data',
+        type: 'any',
+      http: {source: 'body'},
+        required: false
+      },
+      {
+        arg: 'req',
+        type: 'any',
+      http: {source: 'req'},
+        required: true
+      }
+      ],
+      returns: {
+        arg: 'roles',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/getAllRoles',
+        verb: 'post',
+        status: 200,
+        errorStatus: 400
+      }
+    }
+ 
+  );
 
-Organization.remoteMethod(
-    'updateOrganization', {
-      description: " update Organization",
+    Role.remoteMethod(
+    'getAllUserRoles', {
+      description: "get All User Role",
       accepts: [
       {
         arg: 'data',
@@ -114,12 +117,12 @@ Organization.remoteMethod(
       }
       ],
       returns: {
-        arg: 'tenants',
+        arg: 'roles',
         type: 'object',
         root: true
       },
       http: {
-        path: '/updateOrganization',
+        path: '/getAllUserRoles',
         verb: 'post',
         status: 200,
         errorStatus: 400
@@ -128,9 +131,9 @@ Organization.remoteMethod(
  
   );
 
-Organization.remoteMethod(
-    'deleteOrganization', {
-      description: " delete Organization",
+    Role.remoteMethod(
+    'getAllRoleUsers', {
+      description: "get All  Role Users",
       accepts: [
       {
         arg: 'data',
@@ -146,12 +149,12 @@ Organization.remoteMethod(
       }
       ],
       returns: {
-        arg: 'tenants',
+        arg: 'roles',
         type: 'object',
         root: true
       },
       http: {
-        path: '/deleteOrganization',
+        path: '/getAllRoleUsers',
         verb: 'post',
         status: 200,
         errorStatus: 400
@@ -160,9 +163,9 @@ Organization.remoteMethod(
  
   );
 
-Organization.remoteMethod(
-    'activateOrganization', {
-      description: " activate Organization",
+   Role.remoteMethod(
+    'updateUserRole', {
+      description: "update user role",
       accepts: [
       {
         arg: 'data',
@@ -178,12 +181,12 @@ Organization.remoteMethod(
       }
       ],
       returns: {
-        arg: 'tenants',
+        arg: 'roles',
         type: 'object',
         root: true
       },
       http: {
-        path: '/activateOrganization',
+        path: '/updateUserRole',
         verb: 'post',
         status: 200,
         errorStatus: 400
@@ -192,35 +195,5 @@ Organization.remoteMethod(
  
   );
 
-Organization.remoteMethod(
-    'deactivateOrganization', {
-      description: " deactivate Organization",
-      accepts: [
-      {
-        arg: 'data',
-        type: 'any',
-      http: {source: 'body'},
-        required: true
-      },
-      {
-        arg: 'req',
-        type: 'any',
-      http: {source: 'req'},
-        required: true
-      }
-      ],
-      returns: {
-        arg: 'tenants',
-        type: 'object',
-        root: true
-      },
-      http: {
-        path: '/deactivateOrganization',
-        verb: 'post',
-        status: 200,
-        errorStatus: 400
-      }
-    }
- 
-  );
-};
+
+}
