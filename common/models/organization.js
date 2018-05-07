@@ -29,23 +29,21 @@ module.exports = (Organization) => {
     Organization.disableRemoteMethodByName(method);
   });
 
-
   Organization.remoteMethod(
     'addOrganization', {
       description: "Add Organization",
-      accepts: [
-      {
-        arg: 'data',
-        type: 'any',
-      http: {source: 'body'},
-        required: true
-      },
-      {
-        arg: 'req',
-        type: 'any',
-      http: {source: 'req'},
-        required: true
-      }
+      accepts: [{
+          arg: 'data',
+          type: 'any',
+          http: { source: 'body' },
+          required: true
+        },
+        {
+          arg: 'req',
+          type: 'any',
+          http: { source: 'req' },
+          required: true
+        }
       ],
       returns: {
         arg: 'tenants',
@@ -59,26 +57,23 @@ module.exports = (Organization) => {
         errorStatus: 400
       }
     }
- 
   );
 
-
-Organization.remoteMethod(
+  Organization.remoteMethod(
     'getAllOrganizations', {
       description: " Get All Organizations",
-      accepts: [
-      {
-        arg: 'data',
-        type: 'any',
-      http: {source: 'body'},
-        required: true
-      },
-      {
-        arg: 'req',
-        type: 'any',
-      http: {source: 'req'},
-        required: true
-      }
+      accepts: [{
+          arg: 'data',
+          type: 'any',
+          http: { source: 'body' },
+          required: true
+        },
+        {
+          arg: 'req',
+          type: 'any',
+          http: { source: 'req' },
+          required: true
+        }
       ],
       returns: {
         arg: 'tenants',
@@ -92,26 +87,23 @@ Organization.remoteMethod(
         errorStatus: 400
       }
     }
- 
   );
 
-
-Organization.remoteMethod(
+  Organization.remoteMethod(
     'updateOrganization', {
       description: " update Organization",
-      accepts: [
-      {
-        arg: 'data',
-        type: 'any',
-      http: {source: 'body'},
-        required: true
-      },
-      {
-        arg: 'req',
-        type: 'any',
-      http: {source: 'req'},
-        required: true
-      }
+      accepts: [{
+          arg: 'data',
+          type: 'any',
+          http: { source: 'body' },
+          required: true
+        },
+        {
+          arg: 'req',
+          type: 'any',
+          http: { source: 'req' },
+          required: true
+        }
       ],
       returns: {
         arg: 'tenants',
@@ -125,25 +117,23 @@ Organization.remoteMethod(
         errorStatus: 400
       }
     }
- 
   );
 
-Organization.remoteMethod(
+  Organization.remoteMethod(
     'deleteOrganization', {
       description: " delete Organization",
-      accepts: [
-      {
-        arg: 'data',
-        type: 'any',
-      http: {source: 'body'},
-        required: true
-      },
-      {
-        arg: 'req',
-        type: 'any',
-      http: {source: 'req'},
-        required: true
-      }
+      accepts: [{
+          arg: 'data',
+          type: 'any',
+          http: { source: 'body' },
+          required: true
+        },
+        {
+          arg: 'req',
+          type: 'any',
+          http: { source: 'req' },
+          required: true
+        }
       ],
       returns: {
         arg: 'tenants',
@@ -157,25 +147,23 @@ Organization.remoteMethod(
         errorStatus: 400
       }
     }
- 
   );
 
-Organization.remoteMethod(
+  Organization.remoteMethod(
     'activateOrganization', {
       description: " activate Organization",
-      accepts: [
-      {
-        arg: 'data',
-        type: 'any',
-      http: {source: 'body'},
-        required: true
-      },
-      {
-        arg: 'req',
-        type: 'any',
-      http: {source: 'req'},
-        required: true
-      }
+      accepts: [{
+          arg: 'data',
+          type: 'any',
+          http: { source: 'body' },
+          required: true
+        },
+        {
+          arg: 'req',
+          type: 'any',
+          http: { source: 'req' },
+          required: true
+        }
       ],
       returns: {
         arg: 'tenants',
@@ -189,25 +177,23 @@ Organization.remoteMethod(
         errorStatus: 400
       }
     }
- 
   );
 
-Organization.remoteMethod(
+  Organization.remoteMethod(
     'deactivateOrganization', {
       description: " deactivate Organization",
-      accepts: [
-      {
-        arg: 'data',
-        type: 'any',
-      http: {source: 'body'},
-        required: true
-      },
-      {
-        arg: 'req',
-        type: 'any',
-      http: {source: 'req'},
-        required: true
-      }
+      accepts: [{
+          arg: 'data',
+          type: 'any',
+          http: { source: 'body' },
+          required: true
+        },
+        {
+          arg: 'req',
+          type: 'any',
+          http: { source: 'req' },
+          required: true
+        }
       ],
       returns: {
         arg: 'tenants',
@@ -221,6 +207,5 @@ Organization.remoteMethod(
         errorStatus: 400
       }
     }
- 
   );
 };

@@ -1,132 +1,165 @@
 {
-   "Tenant":{
-   "url": "https://172.16.1.56:9443/services/TenantMgtAdminService.TenantMgtAdminServiceHttpsSoap12Endpoint"
-   	},
-  "addTenant": {
-        "soapaction": "urn:addTenant"
-    },
-    "getTenant": {
-        "soapaction": "urn:getTenant"
-    },
-    "retriveTenant":{
+  "Tenant":
+  {
+    "url": "https://127.0.0.1:9443/services/TenantMgtAdminService.TenantMgtAdminServiceHttpsSoap12Endpoint"
+  },
+  "addTenant":
+  {
+    "soapaction": "urn:addTenant"
+  },
+  "getTenant":
+  {
+    "soapaction": "urn:getTenant"
+  },
+  "retriveTenant":
+  {
     "soapaction": "urn:retrieveTenants"
 
-    },
-    "updateTenant":{
+  },
+  "updateTenant":
+  {
     "soapaction": "urn:updateTenant"
 
-    },
-    "deleteTenant":{
+  },
+  "deleteTenant":
+  {
     "soapaction": "urn:deleteTenant"
 
-    },
-    "activateTenant":{
+  },
+  "activateTenant":
+  {
     "soapaction": "urn:activateTenant"
 
-    },
-    "deactivateTenant":{
+  },
+  "deactivateTenant":
+  {
     "soapaction": "urn:deactivateTenant"
 
-    },
-    "User":{
-      "url":"https://172.16.1.56:9443/services/RemoteUserStoreManagerService.RemoteUserStoreManagerServiceHttpsSoap12Endpoint"
-    },
-    "addUser":{
+  },
+  "User":
+  {
+    "url": "https://127.0.0.1:9443/services/RemoteUserStoreManagerService.RemoteUserStoreManagerServiceHttpsSoap12Endpoint"
+  },
+  "addUser":
+  {
     "soapaction": "urn:addUser"
 
-    },
-    "deleteUser":{
+  },
+  "deleteUser":
+  {
     "soapaction": "urn:deleteUser"
 
-    },
-    "addRole":{
+  },
+  "addRole":
+  {
     "soapaction": "urn:addRole"
 
-    },
-    "deleteRole":{
+  },
+  "deleteRole":
+  {
     "soapaction": "urn:deleteRole"
 
-    },
-     "getTenantId":{
+  },
+  "getTenantId":
+  {
     "soapaction": "urn:getTenantId"
 
-    },
-    "updateCredentials":{
+  },
+  "updateCredentials":
+  {
     "soapaction": "urn:updateCredential"
 
-    },
-    "updateCredentialByAdmin":{
+  },
+  "updateCredentialByAdmin":
+  {
     "soapaction": "urn:updateCredentialByAdmin"
 
-    },
-    "getRoleNames":{
+  },
+  "getRoleNames":
+  {
     "soapaction": "urn:getRoleNames"
 
-    },
-    "getRoleListOfUser":{
+  },
+  "getRoleListOfUser":
+  {
     "soapaction": "urn:getRoleListOfUser"
 
-    },
-    "getUserListOfRole":{
-    	 "soapaction": "urn:getUserListOfRole"
-    	
-    },
-     "listUsers":{
-    	 "soapaction": "urn:listUsers"
-    	
-    },
-    "isExistingRole":{
-    	 "soapaction": "urn:isExistingRole"
-    	
-    },
-    "isExistingUser":{
-    	 "soapaction": "urn:isExistingUser"
-    	
-    },
-    "updateUserRole":{
-         "soapaction": "urn:updateRoleListOfUser"
-        
-    },
-    "Super_User_Permission":{
-     "Role":"SUPER_ADMIN"
-    },
-   "Organization_Permission":{
-     "Role":"ORGANIZATIONADMIN"
-    },
-    "Engineer_Permission":{
-     "Role":"SYSTEMENGINEER"
-    },
-    "Super_ADMIN_USER":{
-     "authuser":"admin"
-    },
-     "Super_ADMIN_PASSWORD":{
-     "authpassword":"admin"
-    },
-    "Roles": [{
-      "name": "ORGANIZATIONADMIN"
+  },
+  "getUserListOfRole":
+  {
+    "soapaction": "urn:getUserListOfRole"
+
+  },
+  "listUsers":
+  {
+    "soapaction": "urn:listUsers"
+
+  },
+  "isExistingRole":
+  {
+    "soapaction": "urn:isExistingRole"
+
+  },
+  "isExistingUser":
+  {
+    "soapaction": "urn:isExistingUser"
+
+  },
+  "updateUserRole":
+  {
+    "soapaction": "urn:updateRoleListOfUser"
+
+  },
+  "Super_User_Permission":
+  {
+    "Role": "SUPER_ADMIN"
+  },
+  "Organization_Permission":
+  {
+    "Role": "ORGANIZATION_ADMIN"
+  },
+  "Engineer_Permission":
+  {
+    "Role": "SYSTEM_ENGINEER"
+  },
+  "Super_ADMIN_USER":
+  {
+    "authuser": "admin"
+  },
+  "Super_ADMIN_PASSWORD":
+  {
+    "authpassword": "admin"
+  },
+  "Roles": [
+    {
+      "name": "ORGANIZATION_ADMIN"
     },
     {
-      "name": "SYSTEMENGINEER"
-   }
-    
-  ],
-  "Profile":{
-      "url":"https://172.16.1.56:9443/services/UserProfileMgtService.UserProfileMgtServiceHttpsSoap12Endpoint"
-    },
-     "getProfile":{
-         "soapaction": "urn:getUserProfile"
-        
-    },
-    "addUserClaim":{
-         "soapaction": "urn:addUserClaimValue"
-        
-    },
-     "updateProfile":{
-         "soapaction": "urn:setUserProfile"
-        
+      "name": "SYSTEM_ENGINEER"
     }
-   
 
-  
+  ],
+  "Profile":
+  {
+    "url": "https://127.0.0.1:9443/services/UserProfileMgtService.UserProfileMgtServiceHttpsSoap12Endpoint"
+  },
+  "getProfile":
+  {
+    "soapaction": "urn:getUserProfile"
+
+  },
+  "addUserClaim":
+  {
+    "soapaction": "urn:addUserClaimValue"
+
+  },
+  "updateProfile":
+  {
+    "soapaction": "urn:setUserProfile"
+
+  }
+
+
+
 
 }
