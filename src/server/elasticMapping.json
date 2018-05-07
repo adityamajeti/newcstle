@@ -1,0 +1,85 @@
+{
+  "mappingProperties":
+  {
+    "id":
+    {
+      "type": "keyword",
+      "index": true
+    },
+    "docType":
+    {
+      "type": "keyword",
+      "index": true
+    },
+    "name":
+    {
+      "type": "text",
+      "index": true
+    },
+    "description":
+    {
+      "type": "text",
+      "index": false
+    },
+    "userId":
+    {
+      "type": "keyword",
+      "index": true
+    },
+    "email":
+    {
+      "type": "keyword",
+      "index": true
+    },
+    "username":
+    {
+      "type": "keyword",
+      "index": true
+    },
+    "password":
+    {
+      "type": "keyword",
+      "index": false
+    },
+    "status":
+    {
+      "type": "keyword",
+      "index": true
+    },
+    "tenantId":
+    {
+      "type": "keyword",
+      "index": true
+    },
+    "domain":
+    {
+      "type": "keyword",
+      "index": true
+    },
+    "domainId":
+    {
+      "type": "keyword",
+      "index": true
+    },
+    "parentId":
+    {
+      "type": "keyword",
+      "index": true
+    },
+    "regionId":
+    {
+      "type": "keyword",
+      "index": true
+    },
+    "created":
+    {
+      "type": "date",
+      "index": true
+    },
+    "lastUpdated":
+    {
+      "type": "date",
+      "index": true
+    }
+  }
+}
