@@ -4,6 +4,7 @@ module.exports = (app) => {
     Organization,
     Users,
   } = app.models;
+  const uuidv5 = require('uuid/v5');
   const request = require('request');
   const xml2js = require('xml2js');
   const asyncLib = require('async');
@@ -52,8 +53,39 @@ module.exports = (app) => {
       if (error) {
         cb(error);
       } else if (response && response.statusCode && response.statusCode === 200) {
-        cb(null, {
-          'message': 'Organization added successfully'
+        const orgProfile = {
+          tenantId: data.tenantId,
+          name: data.name,
+          email: data.email,
+          address: data.address,
+          locale: data.locale,
+          timezone: data.timezone
+        };
+        const UserProfile = {
+          tenantId: data.tenantId,
+          username: data.adminUsername,
+          userId: uuidv5(`http://${data.tenantId}/${data.adminUsername}`, uuidv5.URL)
+        };
+        cb(null, orgProfile);
+        Organization.findById(orgProfile.tenantId, (e, org) => {
+          if (org) {
+            _.each(orgProfile, (val, key) => {
+              if (key !== 'tenantId') {
+                org[key] = val;
+              }
+            });
+            org.save(() => {
+              Users.create(UserProfile, () => {
+                //
+              });
+            });
+          } else {
+            Organization.create(orgProfile, () => {
+              Users.create(UserProfile, () => {
+                //
+              });
+            });
+          }
         });
         Organization.addRolesToNewTenant(data);
       } else {
@@ -76,7 +108,7 @@ module.exports = (app) => {
     });
   };
 
-  Organization.getAllOrganizations = (cb) => {
+  Organization.syncAllOrganizations = (cb) => {
     const xml = template.getAllTenantsXml();
 
     const options = {
@@ -101,9 +133,42 @@ module.exports = (app) => {
         });
         parser.parseString(body, (err, result) => {
           if (result) {
-            cb(null, _.map(result.Envelope.Body.retrieveTenantsResponse.return, (t) => {
-              return { tenantId: t.tenantDomain, id: t.tenantId };
-            }));
+            const wso2tenants = _.map(result.Envelope.Body.retrieveTenantsResponse.return, (t) => {
+              return { tenantId: t.tenantDomain, wso2Id: t.tenantId, status: (t.active === 'true' ? 'active' : 'inactive'), email: t.email, name: t.tenantDomain };
+            });
+            const tIds = _.map(wso2tenants, (t) => {
+              return t.tenantId;
+            });
+
+            if (tIds.length) {
+              Organization.find({
+                'where': {
+                  'tenantId': { inq: tIds }
+                }
+              }, (er4, orgs) => {
+                if (orgs && orgs.length) {
+                  if (orgs.length != wso2tenants.length) {
+                    const orgoldtenants = _.map(orgs, (t) => {
+                      return t.tenantId;
+                    });
+                    const newtenants = _.filter(wso2tenants, (t) => {
+                      return orgoldtenants.indexOf(t.tenantId) === -1;
+                    });
+                    Organization.create(newtenants, (oer, orgs) => {
+                      cb(null, wso2tenants);
+                    });
+                  } else {
+                    cb(null, wso2tenants);
+                  }
+                } else {
+                  Organization.create(wso2tenants, (oer, orgs) => {
+                    cb(null, wso2tenants);
+                  });
+                }
+              });
+            } else {
+              cb(null, wso2tenants);
+            }
           } else {
             cb(ErrorHandler('Error fetching Organizations'));
           }
@@ -114,58 +179,18 @@ module.exports = (app) => {
     });
   };
 
-  Organization.updateOrganization = (id, data, cb) => {
-    const xml = template.UpdateTenantXml(id, data.active, data.adminUsername,
-      data.adminPassword, data.email, data.firstname, data.lastname, data.tenantId);
-
-    const options = {
-      url: gConfig.URL.Tenant,
-      method: 'POST',
-      body: xml,
-      headers: {
-        'Content-Type': 'text/xml',
-        'Accept-Encoding': 'gzip,deflate',
-        'Content-Length': xml.length,
-        'SOAPAction': gConfig.Tenant.updateTenant,
-        'Authorization': SuperAdminAuth
-      }
-    };
-
-    request(options, (error, response, body) => {
-      if (error) {
-        cb(error);
-      } else if (response && response.statusCode == 200) {
-        cb(null, {
-          'message': 'Tenant updated successfully',
-        });
-      } else {
-        const parser = new xml2js.Parser({
-          explicitArray: false,
-          tagNameProcessors: [xml2js.processors.stripPrefix]
-        });
-        parser.parseString(body, (err, result) => {
-          if (err) {
-            cb(ErrorHandler('Organization update failed'));
-          } else {
-            cb(ErrorHandler(result.Envelope.Body.Fault.faultstring));
-          }
-        });
-      }
-    });
-  };
-
   Organization.deleteOrganization = (tenantId, cb) => {
     const xml = template.deleteTenantXml(tenantId);
 
     const options = {
-      url: gConfig.URL.Tenant,
+      url: gConfig.URL.RemoteTenant,
       method: 'POST',
       body: xml,
       headers: {
         'Content-Type': 'text/xml',
         'Accept-Encoding': 'gzip,deflate',
         'Content-Length': xml.length,
-        'SOAPAction': gConfig.Tenant.deleteTenant,
+        'SOAPAction': gConfig.RemoteTenant.deleteTenant,
         'Authorization': SuperAdminAuth
       }
     };
@@ -178,22 +203,26 @@ module.exports = (app) => {
           'message': 'Organization deleted successfully'
         });
       } else {
-        const parser = new xml2js.Parser({
-          explicitArray: false,
-          tagNameProcessors: [xml2js.processors.stripPrefix]
-        });
-        parser.parseString(body, (err, result) => {
-          if (err) {
-            cb(ErrorHandler('Organization deletion failed'));
-          } else {
-            cb(ErrorHandler(result.Envelope.Body.Fault.faultstring));
-          }
-        });
+        if (body) {
+          const parser = new xml2js.Parser({
+            explicitArray: false,
+            tagNameProcessors: [xml2js.processors.stripPrefix]
+          });
+          parser.parseString(body, (err, result) => {
+            if (err) {
+              cb(ErrorHandler('Organization deletion failed'));
+            } else {
+              cb(ErrorHandler(result.Envelope.Body.Fault.faultstring));
+            }
+          });
+        } else {
+          cb(ErrorHandler('Organization deletion failed'));
+        }
       }
     });
   };
 
-  Organization.activateOrganization = (tenantId, active, cb) => {
+  Organization.activateOrganization = (tenantId, status, cb) => {
     let xml = template.activateTenantXml(tenantId);
 
     let options = {
@@ -208,7 +237,7 @@ module.exports = (app) => {
         'Authorization': SuperAdminAuth
       }
     };
-    if (active !== 'true' && active !== true) {
+    if (status !== 'active') {
       xml = template.deactivateTenantXml(tenantId);
       options = {
         url: gConfig.URL.Tenant,
@@ -228,21 +257,33 @@ module.exports = (app) => {
       if (error) {
         cb(error);
       } else if (response && response.statusCode == 200) {
-        cb(null, {
-          'message': 'Organization updated successfully'
-        });
-      } else {
-        const parser = new xml2js.Parser({
-          explicitArray: false,
-          tagNameProcessors: [xml2js.processors.stripPrefix]
-        });
-        parser.parseString(body, (err, result) => {
-          if (err) {
-            cb(ErrorHandler('Organization update failed'));
+        Organization.findById(tenantId, (er, td) => {
+          if (td) {
+            td.status = status === 'active' ? status : 'inactive';
+            td.save(cb);
           } else {
-            cb(ErrorHandler(result.Envelope.Body.Fault.faultstring));
+            cb(null, {
+              'tenantId': tenantId,
+              'status': status === 'active' ? status : 'inactive'
+            });
           }
         });
+      } else {
+        if (body) {
+          const parser = new xml2js.Parser({
+            explicitArray: false,
+            tagNameProcessors: [xml2js.processors.stripPrefix]
+          });
+          parser.parseString(body, (err, result) => {
+            if (err) {
+              cb(ErrorHandler('Organization update failed'));
+            } else {
+              cb(ErrorHandler(result.Envelope.Body.Fault.faultstring));
+            }
+          });
+        } else {
+          cb(ErrorHandler('Organization deletion failed'));
+        }
       }
     });
   };
@@ -290,4 +331,62 @@ module.exports = (app) => {
       });
     });
   };
+
+  // Organization patchAttributes filter core attributes
+  Organization.beforeRemote('prototype.patchAttributes', (ctx, instance, next) => {
+    const filterargs = ['wso2Id', 'tenantId', 'status'];
+    _.each(filterargs, (arg) => {
+      delete ctx.args.data[arg];
+    });
+    next();
+  });
+
+  Organization.observe('before delete', (ctx, next) => {
+    const modelId = (ctx.where && ctx.where.id) ? ctx.where.id : ((ctx.where && ctx.where.tenantId) ? ctx.where.tenantId : null);
+    if (ctx.where && modelId) {
+      Organization.findById(modelId, (e, r) => {
+        if (r) {
+          Organization.deleteOrganization(r.wso2Id, () => {
+            next();
+          });
+        } else {
+          next();
+        }
+      });
+    } else {
+      next();
+    }
+  });
+
+  Organization.observe('after delete', (ctx, next) => {
+    Users.find({
+      'where': {
+        'tenantId': ctx.where.id
+      }
+    }, (e, usrs) => {
+      if(usrs) {
+        asyncLib.each(usrs, (usr, nt) => {
+          usr.destroy(() => {
+            nt();
+          });
+        }, (er) => {
+          //
+        });
+      }
+    });
+    next();
+  });
+
+  // Sync Organizations on boot
+  // TODO: REDIS Kue Job
+  setTimeout(() => {
+    Organization.syncAllOrganizations(() => {
+      //
+    });
+  }, 5 * 1000);
+  setInterval(() => {
+    Organization.syncAllOrganizations(() => {
+      //
+    });
+  }, 30 * 60 * 1000);
 };

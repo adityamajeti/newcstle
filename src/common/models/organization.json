@@ -19,6 +19,26 @@
       "required": true,
       "id": true
     },
+    "wso2Id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "locale": {
+      "type": ["string"],
+      "default": ["en-US"]
+    },
+    "timezone": {
+      "type": "string",
+      "default": "Asia/Kolkata"
+    },
+    "email": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
     "tags": {
       "type": [
         "string"

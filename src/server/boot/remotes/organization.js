@@ -17,7 +17,7 @@ module.exports = (app) => {
       ],
       returns: {
         arg: 'Organization',
-        type: 'object',
+        type: 'Organization',
         root: true
       },
       http: {

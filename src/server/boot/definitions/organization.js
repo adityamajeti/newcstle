@@ -11,7 +11,8 @@ module.exports = (app) => {
     'tenantId': {
       'type': 'string',
       'description': 'Organization domain eg: quantela.com',
-      'required': 'true'
+      'required': 'true',
+      'id': true
     },
     'address': {
       'type': 'string',

@@ -10,10 +10,6 @@ module.exports = (Organization) => {
     'replaceOrCreate',
     'createChangeStream',
     'upsertWithWhere',
-    'deleteById',
-    'find',
-    'findById',
-    'prototype.patchAttributes',
     'prototype.__create__domains',
     'prototype.__delete__domains',
     'prototype.__destroyById__domains',
@@ -32,68 +28,17 @@ module.exports = (Organization) => {
   });
 
   Organization.remoteMethod(
-    'getAllOrganizations', {
-      description: ' Get All Organizations',
+    'syncAllOrganizations', {
+      description: ' Sync All Organizations from WSO2',
       accepts: [],
       returns: {
         arg: 'Organization',
-        type: 'object',
+        type: 'any',
         root: true
       },
       http: {
-        path: '/',
-        verb: 'get',
-        status: 200,
-        errorStatus: 400
-      }
-    }
-  );
-
-  Organization.remoteMethod(
-    'updateOrganization', {
-      description: 'update Organization',
-      accepts: [{
-        arg: 'id',
-        type: 'string',
-        http: { source: 'path' },
-        required: true
-      }, {
-        arg: 'data',
-        type: 'object',
-        http: { source: 'body' },
-        required: true
-      }],
-      returns: {
-        arg: 'Organization',
-        type: 'object',
-        root: true
-      },
-      http: {
-        path: '/:id',
-        verb: 'put',
-        status: 200,
-        errorStatus: 400
-      }
-    }
-  );
-
-  Organization.remoteMethod(
-    'deleteOrganization', {
-      description: 'delete Organization',
-      accepts: [{
-        arg: 'tenantId',
-        type: 'string',
-        http: { source: 'path' },
-        required: true
-      }],
-      returns: {
-        arg: 'info',
-        type: 'object',
-        root: true
-      },
-      http: {
-        path: '/:tenantId',
-        verb: 'delete',
+        path: '/sync',
+        verb: 'post',
         status: 200,
         errorStatus: 400
       }
@@ -109,9 +54,10 @@ module.exports = (Organization) => {
         http: { source: 'path' },
         required: true
       }, {
-        arg: 'active',
+        arg: 'status',
         type: 'string',
         http: { source: 'path' },
+        description: 'active / inactive',
         required: true
       }],
       returns: {
@@ -120,7 +66,7 @@ module.exports = (Organization) => {
         root: true
       },
       http: {
-        path: '/:id/activate/:active',
+        path: '/:id/activate/:status',
         verb: 'post',
         status: 200,
         errorStatus: 400

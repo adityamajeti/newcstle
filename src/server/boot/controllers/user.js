@@ -4,33 +4,53 @@ module.exports = (app) => {
     Organization,
     Users,
   } = app.models;
+  const uuidv5 = require('uuid/v5');
+  const request = require('request');
+  const xml2js = require('xml2js');
+  const asyncLib = require('async');
+  const _ = require('underscore');
+  const template = require('../util/templates');
+  const gConfig = require('../../gateway-config.js');
+  const SuperAdminAuth = `Basic ${new Buffer(`${gConfig.Super_ADMIN_USER.authuser}:${gConfig.Super_ADMIN_PASSWORD.authpassword}`).toString('base64')}`;
+
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
+  const ErrorHandler = (message, data = null, statusCode = null, code = null) => {
+    const error = new Error(message);
+    if (data) {
+      error.data = data;
+    }
+
+    if (statusCode) {
+      error.statusCode = statusCode;
+    }
+
+    if (code) {
+      error.code = code;
+    }
+
+    return error;
+  };
 
   Users.addUser = (data, req, cb) => {
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-    let rolename = data.rolename;
-    let claimkeys = data.userattributes;
-    let authdetails = data.auth;
-    let username = data.loginname;
-    let password = data.password;
+    const auth = `Basic ${new Buffer(`${req.UserInfo.username}:${data.authpassword}`).toString('base64')}`;
 
-    let auth = 'Basic ' + new Buffer(authdetails[0].authuser + ':' + authdetails[1].authpassword).toString('base64');
-
-    let xml = template.createUserXml(rolename, claimkeys, username, password);
+    let xml = template.createUserXml(data.roles, data.claims, data.username, data.password);
 
     var options = {
-      url: confs.URL.User,
+      url: gConfig.URL.User,
       method: 'POST',
       body: xml,
       headers: {
         'Content-Type': 'text/xml',
         'Accept-Encoding': 'gzip,deflate',
         'Content-Length': xml.length,
-        'SOAPAction': confs.addUser.soapaction,
+        'SOAPAction': gConfig.User.addUser,
         'Authorization': auth
       }
     };
 
-    let callback = (error, response, body) => {
+    request(options, (error, response, body) => {
       if (!error && (response.statusCode == 200 || response.statusCode == 202)) {
         //console.log('Raw result', body);
         var resdata = {
@@ -60,13 +80,12 @@ module.exports = (app) => {
         cb(resdata);
       }
       console.log('E', response.statusCode, response.statusMessage);
-    };
-    request(options, callback);
+    });
   };
 
   Users.deleteUser = (data, req, cb) => {
-    let authuser = confs.Super_ADMIN_USER.authuser;
-    let authpassword = confs.Super_ADMIN_PASSWORD.authpassword;
+    let authuser = gConfig.Super_ADMIN_USER.authuser;
+    let authpassword = gConfig.Super_ADMIN_PASSWORD.authpassword;
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     let auth = 'Basic ' + new Buffer(authuser + ':' + authpassword).toString('base64');
     let username = data.username;
@@ -74,14 +93,14 @@ module.exports = (app) => {
     let xml = template.deleteUserXml(username);
 
     var options = {
-      url: confs.URL.User,
+      url: gConfig.URL.User,
       method: 'POST',
       body: xml,
       headers: {
         'Content-Type': 'text/xml',
         'Accept-Encoding': 'gzip,deflate',
         'Content-Length': xml.length,
-        'SOAPAction': confs.deleteUser.soapaction,
+        'SOAPAction': gConfig.deleteUser.soapaction,
         'Authorization': auth
       }
     };
@@ -121,8 +140,8 @@ module.exports = (app) => {
   };
 
   Users.updateCredential = (data, req, cb) => {
-    let authuser = confs.Super_ADMIN_USER.authuser;
-    let authpassword = confs.Super_ADMIN_PASSWORD.authpassword;
+    let authuser = gConfig.Super_ADMIN_USER.authuser;
+    let authpassword = gConfig.Super_ADMIN_PASSWORD.authpassword;
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     let auth = 'Basic ' + new Buffer(authuser + ':' + authpassword).toString('base64');
     let username = data.username;
@@ -132,14 +151,14 @@ module.exports = (app) => {
     let xml = template.getupdateCredentialsXml(username, oldpassword, newpassword);
 
     var options = {
-      url: confs.URL.User,
+      url: gConfig.URL.User,
       method: 'POST',
       body: xml,
       headers: {
         'Content-Type': 'text/xml',
         'Accept-Encoding': 'gzip,deflate',
         'Content-Length': xml.length,
-        'SOAPAction': confs.updateCredentials.soapaction,
+        'SOAPAction': gConfig.updateCredentials.soapaction,
         'Authorization': auth
       }
     };
@@ -181,8 +200,8 @@ module.exports = (app) => {
   };
 
   Users.updateCredentialByAdmin = (data, req, cb) => {
-    let authuser = confs.Super_ADMIN_USER.authuser;
-    let authpassword = confs.Super_ADMIN_PASSWORD.authpassword;
+    let authuser = gConfig.Super_ADMIN_USER.authuser;
+    let authpassword = gConfig.Super_ADMIN_PASSWORD.authpassword;
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     let auth = 'Basic ' + new Buffer(authuser + ':' + authpassword).toString('base64');
     let username = data.username;
@@ -191,14 +210,14 @@ module.exports = (app) => {
     let xml = template.getupdateCredentialsByAdminXml(username, newpassword);
 
     var options = {
-      url: confs.URL.User,
+      url: gConfig.URL.User,
       method: 'POST',
       body: xml,
       headers: {
         'Content-Type': 'text/xml',
         'Accept-Encoding': 'gzip,deflate',
         'Content-Length': xml.length,
-        'SOAPAction': confs.updateCredentialByAdmin.soapaction,
+        'SOAPAction': gConfig.updateCredentialByAdmin.soapaction,
         'Authorization': auth
       }
     };
@@ -247,22 +266,22 @@ module.exports = (app) => {
 
   Users.getUserList = (data, req, cb) => {
 
-    let authuser = confs.Super_ADMIN_USER.authuser;
-    let authpassword = confs.Super_ADMIN_PASSWORD.authpassword;
+    let authuser = gConfig.Super_ADMIN_USER.authuser;
+    let authpassword = gConfig.Super_ADMIN_PASSWORD.authpassword;
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     let auth = 'Basic ' + new Buffer(authuser + ':' + authpassword).toString('base64');
     let limit = data.limit;
     let xml = template.getuserListXml(limit);
 
     var options = {
-      url: confs.URL.User,
+      url: gConfig.URL.User,
       method: 'POST',
       body: xml,
       headers: {
         'Content-Type': 'text/xml',
         'Accept-Encoding': 'gzip,deflate',
         'Content-Length': xml.length,
-        'SOAPAction': confs.listUsers.soapaction,
+        'SOAPAction': gConfig.listUsers.soapaction,
         'Authorization': auth
       }
     };
@@ -353,14 +372,14 @@ module.exports = (app) => {
     let xml = template.getUserProfile(username);
 
     var options = {
-      url: confs.URL.Profile,
+      url: gConfig.URL.Profile,
       method: 'POST',
       body: xml,
       headers: {
         'Content-Type': 'text/xml',
         'Accept-Encoding': 'gzip,deflate',
         'Content-Length': xml.length,
-        'SOAPAction': confs.getProfile.soapaction,
+        'SOAPAction': gConfig.getProfile.soapaction,
         'Authorization': auth
       }
     };
@@ -461,14 +480,14 @@ module.exports = (app) => {
     let xml = template.createUserClaimsXml(claimkeys, username);
 
     var options = {
-      url: confs.URL.User,
+      url: gConfig.URL.User,
       method: 'POST',
       body: xml,
       headers: {
         'Content-Type': 'text/xml',
         'Accept-Encoding': 'gzip,deflate',
         'Content-Length': xml.length,
-        'SOAPAction': confs.addUserClaim.soapaction,
+        'SOAPAction': gConfig.addUserClaim.soapaction,
         'Authorization': auth
       }
     };
@@ -537,14 +556,14 @@ module.exports = (app) => {
     let xml = template.updateProfileXml(claimkeys, username);
 
     var options = {
-      url: confs.URL.Profile,
+      url: gConfig.URL.Profile,
       method: 'POST',
       body: xml,
       headers: {
         'Content-Type': 'text/xml',
         'Accept-Encoding': 'gzip,deflate',
         'Content-Length': xml.length,
-        'SOAPAction': confs.updateProfile.soapaction,
+        'SOAPAction': gConfig.updateProfile.soapaction,
         'Authorization': auth
       }
     };

@@ -15,15 +15,8 @@ exports.getAllTenantsXml = () => {
   return xml;
 };
 
-exports.getAllTenantByDomainXml = (req, res) => {
+exports.getTenantByDomainXml = (req, res) => {
   const xml = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://services.mgt.tenant.carbon.wso2.org"><soapenv:Header/><soapenv:Body><ser:getTenant><ser:tenantDomain>${req.body.tenantDomain}</ser:tenantDomain></ser:getTenant></soapenv:Body></soapenv:Envelope>`;
-
-  return xml;
-};
-
-exports.UpdateTenantXml = (id, active, adminUsername, adminPassword, email, firstname,
-  lastname, tenantId) => {
-  const xml = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://services.mgt.tenant.carbon.wso2.org" xmlns:xsd="http://beans.common.stratos.carbon.wso2.org/xsd"><soapenv:Header/><soapenv:Body><ser:updateTenant><ser:tenantInfoBean><xsd:active>${active}</xsd:active><xsd:admin>${adminUsername}</xsd:admin><xsd:adminPassword>${adminPassword}</xsd:adminPassword><xsd:email>${email}</xsd:email><xsd:firstname>${firstname}</xsd:firstname><xsd:lastname>${lastname}</xsd:lastname><xsd:tenantDomain>${tenantId}</xsd:tenantDomain><xsd:tenantId>${id}</xsd:tenantId></ser:tenantInfoBean></ser:updateTenant></soapenv:Body></soapenv:Envelope>`;
 
   return xml;
 };
@@ -59,7 +52,7 @@ exports.deleteRoleXml = (rolename) => {
   return xml;
 };
 
-exports.createUserXml = (rolename, claimkeys, username, password) => {
+exports.createUserXml = (roles, claims, username, password) => {
   let rolesXml = '';
   let claimsXml = '';
 
