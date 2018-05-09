@@ -1,570 +1,293 @@
 'use strict';
-
-var request = require('request');
-
-var template = require('../util/templates');
-var confs = require('../../global-config.json');
-var asyncLib = require('async');
-
-
 module.exports = (app) => {
   const {
     Organization,
     Users,
   } = app.models;
+  const request = require('request');
+  const xml2js = require('xml2js');
+  const asyncLib = require('async');
+  const _ = require('underscore');
+  const template = require('../util/templates');
+  const gConfig = require('../../gateway-config.js');
+  const SuperAdminAuth = `Basic ${new Buffer(`${gConfig.Super_ADMIN_USER.authuser}:${gConfig.Super_ADMIN_PASSWORD.authpassword}`).toString('base64')}`;
 
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-  Organization.addOrganization = (data, req, cb) => {
+  const ErrorHandler = (message, data = null, statusCode = null, code = null) => {
+    const error = new Error(message);
+    if (data) {
+      error.data = data;
+    }
 
-  // cb(null,"method called");
-  let authuser = confs.Super_ADMIN_USER.authuser;
-  let authpassword = confs.Super_ADMIN_PASSWORD.authpassword;
+    if (statusCode) {
+      error.statusCode = statusCode;
+    }
 
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-  let auth = "Basic " + new Buffer(authuser + ":" + authpassword).toString("base64");
+    if (code) {
+      error.code = code;
+    }
 
-  let active = data.active;
-  let adminName = data.adminname;
-  let adminPassword = data.adminPassword;
-  let email = data.email;
-  let firstName = data.firstname;
-  let lastName = data.lastname;
-  let tenantDomain = data.tenantDomain;
-
-
-  let xml = template.CreateTenantXml(active, adminName, adminPassword, email, firstName,
-   lastName, tenantDomain);
-
-
-
-  var options = {
-   url: confs.Tenant.url,
-   method: 'POST',
-   body: xml,
-   headers: {
-    'Content-Type': 'text/xml',
-    'Accept-Encoding': 'gzip,deflate',
-    'Content-Length': xml.length,
-    'SOAPAction': confs.addTenant.soapaction,
-    'Authorization': auth
-   }
+    return error;
   };
 
+  Organization.addOrganization = (data, cb) => {
+    const tenantCreateXML = template.CreateTenantXml(data.adminUsername, data.adminPassword, data.email, data.firstname, data.lastname, data.tenantId);
 
-  let callback = (error, response, body) => {
-
-   if (!error && response.statusCode == 200) {
-    //console.log('Raw result', body);
-    var xml2js = require('xml2js');
-    var parser = new xml2js.Parser({
-     explicitArray: false,
-     tagNameProcessors: [xml2js.processors.stripPrefix]
-    });
-
-    parser.parseString(body, (err, result) => {
-     console.log(result.Envelope.Body.addTenantResponse.return);
-
-     asyncLib.each(confs.Roles, (rls, next) => {
-
-      let xml1 = template.getaddRoleXml(rls.name);
-      let domainauthuser = adminName + "@" + tenantDomain;
-      let domainauth = "Basic " + new Buffer(domainauthuser + ":" + adminPassword).toString("base64");
-
-
-
-      var options = {
-       url: confs.User.url,
-       method: 'POST',
-       body: xml1,
-       headers: {
+    const options = {
+      url: gConfig.URL.Tenant,
+      method: 'POST',
+      body: tenantCreateXML,
+      headers: {
         'Content-Type': 'text/xml',
         'Accept-Encoding': 'gzip,deflate',
-        'Content-Length': xml1.length,
-        'SOAPAction': confs.addRole.soapaction,
-        'Authorization': domainauth
-       }
-      };
+        'Content-Length': tenantCreateXML.length,
+        'SOAPAction': gConfig.Tenant.addTenant,
+        'Authorization': SuperAdminAuth
+      },
+      timeout: 30000
+    };
 
-      let callback = (error, response, body) => {
+    request(options, (error, response, body) => {
+      if (error) {
+        cb(error);
+      } else if (response && response.statusCode && response.statusCode === 200) {
+        cb(null, {
+          'message': 'Organization added successfully'
+        });
+        Organization.addRolesToNewTenant(data);
+      } else {
+        if (body) {
+          const parser = new xml2js.Parser({
+            explicitArray: false,
+            tagNameProcessors: [xml2js.processors.stripPrefix]
+          });
+          parser.parseString(body, (err, result) => {
+            if (err) {
+              cb(ErrorHandler('Organization creation failed'));
+            } else {
+              cb(ErrorHandler(result.Envelope.Body.Fault.faultstring));
+            }
+          });
+        } else {
+          cb(ErrorHandler('Organization creation failed'));
+        }
+      }
+    });
+  };
 
+  Organization.getAllOrganizations = (cb) => {
+    const xml = template.getAllTenantsXml();
 
-       console.log(response.statusCode);
-       if (response.statusCode == 200 || response.statusCode == 202) {
+    const options = {
+      url: gConfig.URL.Tenant,
+      method: 'POST',
+      body: xml,
+      headers: {
+        'Content-Type': 'text/xml',
+        'Accept-Encoding': 'gzip,deflate',
+        'Content-Length': xml.length,
+        'SOAPAction': gConfig.Tenant.retriveTenants,
+        'Authorization': SuperAdminAuth
+      }
+    };
+    request(options, (error, response, body) => {
+      if (error) {
+        cb(error);
+      } else if (response && response.statusCode && response.statusCode === 200) {
+        const parser = new xml2js.Parser({
+          explicitArray: false,
+          tagNameProcessors: [xml2js.processors.stripPrefix]
+        });
+        parser.parseString(body, (err, result) => {
+          if (result) {
+            cb(null, _.map(result.Envelope.Body.retrieveTenantsResponse.return, (t) => {
+              return { tenantId: t.tenantDomain, id: t.tenantId };
+            }));
+          } else {
+            cb(ErrorHandler('Error fetching Organizations'));
+          }
+        });
+      } else {
+        cb(ErrorHandler('Error fetching Organizations'));
+      }
+    });
+  };
 
-        let xml2 = template.updateUserRoleCreationXml(adminName,rls.name);
+  Organization.updateOrganization = (id, data, cb) => {
+    const xml = template.UpdateTenantXml(id, data.active, data.adminUsername,
+      data.adminPassword, data.email, data.firstname, data.lastname, data.tenantId);
 
-        var options1 = {
-         url: confs.User.url,
-         method: 'POST',
-         body: xml2,
-         headers: {
+    const options = {
+      url: gConfig.URL.Tenant,
+      method: 'POST',
+      body: xml,
+      headers: {
+        'Content-Type': 'text/xml',
+        'Accept-Encoding': 'gzip,deflate',
+        'Content-Length': xml.length,
+        'SOAPAction': gConfig.Tenant.updateTenant,
+        'Authorization': SuperAdminAuth
+      }
+    };
+
+    request(options, (error, response, body) => {
+      if (error) {
+        cb(error);
+      } else if (response && response.statusCode == 200) {
+        cb(null, {
+          'message': 'Tenant updated successfully',
+        });
+      } else {
+        const parser = new xml2js.Parser({
+          explicitArray: false,
+          tagNameProcessors: [xml2js.processors.stripPrefix]
+        });
+        parser.parseString(body, (err, result) => {
+          if (err) {
+            cb(ErrorHandler('Organization update failed'));
+          } else {
+            cb(ErrorHandler(result.Envelope.Body.Fault.faultstring));
+          }
+        });
+      }
+    });
+  };
+
+  Organization.deleteOrganization = (tenantId, cb) => {
+    const xml = template.deleteTenantXml(tenantId);
+
+    const options = {
+      url: gConfig.URL.Tenant,
+      method: 'POST',
+      body: xml,
+      headers: {
+        'Content-Type': 'text/xml',
+        'Accept-Encoding': 'gzip,deflate',
+        'Content-Length': xml.length,
+        'SOAPAction': gConfig.Tenant.deleteTenant,
+        'Authorization': SuperAdminAuth
+      }
+    };
+
+    request(options, (error, response, body) => {
+      if (error) {
+        cb(error);
+      } else if (response && response.statusCode == 200) {
+        cb(null, {
+          'message': 'Organization deleted successfully'
+        });
+      } else {
+        const parser = new xml2js.Parser({
+          explicitArray: false,
+          tagNameProcessors: [xml2js.processors.stripPrefix]
+        });
+        parser.parseString(body, (err, result) => {
+          if (err) {
+            cb(ErrorHandler('Organization deletion failed'));
+          } else {
+            cb(ErrorHandler(result.Envelope.Body.Fault.faultstring));
+          }
+        });
+      }
+    });
+  };
+
+  Organization.activateOrganization = (tenantId, active, cb) => {
+    let xml = template.activateTenantXml(tenantId);
+
+    let options = {
+      url: gConfig.URL.Tenant,
+      method: 'POST',
+      body: xml,
+      headers: {
+        'Content-Type': 'text/xml',
+        'Accept-Encoding': 'gzip,deflate',
+        'Content-Length': xml.length,
+        'SOAPAction': gConfig.Tenant.activateTenant,
+        'Authorization': SuperAdminAuth
+      }
+    };
+    if (active !== 'true' && active !== true) {
+      xml = template.deactivateTenantXml(tenantId);
+      options = {
+        url: gConfig.URL.Tenant,
+        method: 'POST',
+        body: xml,
+        headers: {
           'Content-Type': 'text/xml',
           'Accept-Encoding': 'gzip,deflate',
           'Content-Length': xml.length,
-          'SOAPAction': confs.updateUserRole.soapaction,
-          'Authorization': domainauth
-         }
-        };
-       
-        let callback1 = (error, response, body) => {
-          console.log("userole updated"+response.statusCode);
-
-         if (!error && (response.statusCode == 200 || response.statusCode == 202)) {
-          //console.log('Raw result', body);
-          next();
-
-         }else if (response.statusCode == 500) {
-
-            var xml2js = require('xml2js');
-            var parser = new xml2js.Parser({
-                explicitArray: false,
-                tagNameProcessors: [xml2js.processors.stripPrefix]
-            });
-            parser.parseString(body, (err, result) => {
-                console.log(result.Envelope.Body.Fault.faultstring);
-
-                
-            });
-
+          'SOAPAction': gConfig.Tenant.deactivateTenant,
+          'Authorization': SuperAdminAuth
         }
-         console.log('E', response.statusCode, response.statusMessage);
-        };
-        request(options1, callback1);
-
-       }
-
-      }
-      request(options, callback);
-
-     }, (err) => {});
-
-     var resdata = {
-      "message": "Tenant added successfully"
-     }
-     cb(null, resdata);
-
-
-    });
-
-
-
-   } else if (response.statusCode == 500) {
-    console.log(body);
-    var xml2js = require('xml2js');
-    var parser = new xml2js.Parser({
-     explicitArray: false,
-     tagNameProcessors: [xml2js.processors.stripPrefix]
-    });
-    parser.parseString(body, (err, result) => {
-     console.log(result.Envelope.Body.Fault.faultstring);
-
-     var resdata = {
-      "errorcode": response.statusCode,
-      "message": result.Envelope.Body.Fault.faultstring
-
-     }
-     cb(resdata);
-
-    });
-
-   } else {
-    var resdata = {
-     "errorcode": response.statusCode,
-     "message": "Internal server error"
-
+      };
     }
-    cb(resdata);
 
-   }
-   console.log('E', response.statusCode, response.statusMessage);
-  };
-  request(options, callback);
-
-
-
- }
-
- Organization.getAllOrganizations = (data, req, cb) => {
-
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-  let authuser = confs.Super_ADMIN_USER.authuser;
-  let authpassword = confs.Super_ADMIN_PASSWORD.authpassword;
-  let auth = "Basic " + new Buffer(authuser + ":" + authpassword).toString("base64");
-
-  let xml = template.getAllTenantsXml();
-
-  var options = {
-   url: confs.Tenant.url,
-   method: 'POST',
-   body: xml,
-   headers: {
-    'Content-Type': 'text/xml',
-    'Accept-Encoding': 'gzip,deflate',
-    'Content-Length': xml.length,
-    'SOAPAction': confs.retriveTenant.soapaction,
-    'Authorization': auth
-   }
-  };
-
-
-  let callback = (error, response, body) => {
-   //console.log(response);
-   if (!error && response.statusCode == 200) {
-    //console.log('Raw result', body);
-    var xml2js = require('xml2js');
-    var parser = new xml2js.Parser({
-     explicitArray: false,
-     tagNameProcessors: [xml2js.processors.stripPrefix]
+    request(options, (error, response, body) => {
+      if (error) {
+        cb(error);
+      } else if (response && response.statusCode == 200) {
+        cb(null, {
+          'message': 'Organization updated successfully'
+        });
+      } else {
+        const parser = new xml2js.Parser({
+          explicitArray: false,
+          tagNameProcessors: [xml2js.processors.stripPrefix]
+        });
+        parser.parseString(body, (err, result) => {
+          if (err) {
+            cb(ErrorHandler('Organization update failed'));
+          } else {
+            cb(ErrorHandler(result.Envelope.Body.Fault.faultstring));
+          }
+        });
+      }
     });
+  };
 
-    parser.parseString(body, (err, result) => {
+  Organization.addRolesToNewTenant = (data) => {
+    const domainauth = `Basic ${new Buffer(`${data.adminUsername}@${data.tenantId}:${data.adminPassword}`).toString('base64')}`;
+    const addOrgAdminRoleToUser = template.updateUserRoleCreationXml(data.adminUsername, 'ORGANIZATION_ADMIN');
 
-     var arraydata = [];
+    asyncLib.each(gConfig.Roles, (rls, next) => {
+      const createRoleXML = template.getaddRoleXml(rls.name);
+      const options = {
+        url: gConfig.URL.User,
+        method: 'POST',
+        body: createRoleXML,
+        headers: {
+          'Content-Type': 'text/xml',
+          'Accept-Encoding': 'gzip,deflate',
+          'Content-Length': createRoleXML.length,
+          'SOAPAction': gConfig.User.addRole,
+          'Authorization': domainauth
+        }
+      };
 
-     for (var inx = 0; inx < result.Envelope.Body.retrieveTenantsResponse.return.length; inx++) {
-
-      var tenantId = result.Envelope.Body.retrieveTenantsResponse.return[inx].tenantId;
-      var tenantDomain = result.Envelope.Body.retrieveTenantsResponse.return[inx].tenantDomain;
-
-      arraydata.push({
-       tenantId: tenantId,
-       tenantDomain: tenantDomain
+      request(options, (error, response, body) => {
+        next();
       });
+    }, (err) => {
+      const options1 = {
+        url: gConfig.URL.User,
+        method: 'POST',
+        body: addOrgAdminRoleToUser,
+        headers: {
+          'Content-Type': 'text/xml',
+          'Accept-Encoding': 'gzip,deflate',
+          'Content-Length': addOrgAdminRoleToUser.length,
+          'SOAPAction': gConfig.User.updateRoleListOfUser,
+          'Authorization': domainauth
+        }
+      };
 
-      if (inx == result.Envelope.Body.retrieveTenantsResponse.return.length - 1) {
-
-       cb(null, arraydata);
-
-      }
-
-
-     }
-
-
-
+      request(options1, (error, response, body) => {
+        if (response && (response.statusCode == 200 || response.statusCode == 202)) {
+          //
+        }
+      });
     });
-
-
-
-   } else if (response.statusCode == 500) {
-
-    var xml2js = require('xml2js');
-    var parser = new xml2js.Parser({
-     explicitArray: false,
-     tagNameProcessors: [xml2js.processors.stripPrefix]
-    });
-    parser.parseString(body, (err, result) => {
-     console.log(result.Envelope.Body.Fault.faultstring);
-
-     var resdata = {
-      "errorcode": response.statusCode,
-      "message": result.Envelope.Body.Fault.faultstring
-
-     }
-     cb(resdata);
-    });
-
-   } else {
-    var resdata = {
-     "errorcode": response.statusCode,
-     "message": "Internal server error"
-
-    }
-    cb(resdata);
-
-   }
-   console.log('E', response.statusCode, response.statusMessage);
   };
-  request(options, callback);
-
-
- }
-
- Organization.updateOrganization = (data, req, cb) => {
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-  let authuser = confs.Super_ADMIN_USER.authuser;
-  let authpassword = confs.Super_ADMIN_PASSWORD.authpassword;
-  let auth = "Basic " + new Buffer(authuser + ":" + authpassword).toString("base64");
-
-
-
-  let active = data.active;
-  let adminName = data.adminname;
-  let adminPassword = data.adminPassword;
-  let email = data.email;
-  let firstName = data.firstname;
-  let lastName = data.lastname;
-  let tenantDomain = data.tenantDomain;
-  let tenantId = data.tenantId;
-
-
-  let xml = template.UpdateTenantXml(active, adminName, adminPassword, email, firstName,
-   lastName, tenantDomain, tenantId);
-
-  var options = {
-   url: confs.Tenant.url,
-   method: 'POST',
-   body: xml,
-   headers: {
-    'Content-Type': 'text/xml',
-    'Accept-Encoding': 'gzip,deflate',
-    'Content-Length': xml.length,
-    'SOAPAction': confs.updateTenant.soapaction,
-    'Authorization': auth
-   }
-  };
-  console.log(options);
-  let callback = (error, response, body) => {
-   //console.log(response);
-   if (!error && response.statusCode == 200) {
-    //console.log('Raw result', body);
-
-    var resdata = {
-     "message": "Tenant updated successfully",
-
-    }
-    cb(null, resdata);
-
-
-   } else if (response.statusCode == 500) {
-    console.log(body);
-    var xml2js = require('xml2js');
-    var parser = new xml2js.Parser({
-     explicitArray: false,
-     tagNameProcessors: [xml2js.processors.stripPrefix]
-    });
-    parser.parseString(body, (err, result) => {
-     console.log(result.Envelope.Body.Fault.faultstring);
-
-     var resdata = {
-      "errorcode": response.statusCode,
-      "message": result.Envelope.Body.Fault.faultstring
-
-     }
-     cb(resdata);
-    });
-
-   } else {
-    var resdata = {
-     "errorcode": response.statusCode,
-     "message": "Internal server error"
-
-    }
-    cb(resdata);
-
-   }
-   console.log('E', response.statusCode, response.statusMessage);
-  };
-  request(options, callback);
-
-
- }
-
-
- Organization.deleteOrganization = (data, req, cb) => {
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-  let authuser = confs.Super_ADMIN_USER.authuser;
-  let authpassword = confs.Super_ADMIN_PASSWORD.authpassword;
-  let auth = "Basic " + new Buffer(authuser + ":" + authpassword).toString("base64");
-
-  let tenantDomain = data.tenantDomain;
-
-  let xml = template.getdeleteTenantXml(tenantDomain);
-
-  var options = {
-   url: confs.Tenant.url,
-   method: 'POST',
-   body: xml,
-   headers: {
-    'Content-Type': 'text/xml',
-    'Accept-Encoding': 'gzip,deflate',
-    'Content-Length': xml.length,
-    'SOAPAction': confs.deleteTenant.soapaction,
-    'Authorization': auth
-   }
-  };
-
-
-  let callback = (error, response, body) => {
-
-   if (!error && response.statusCode == 200) {
-    //console.log('Raw result', body);
-    var resdata = {
-     "message": "Tenant deleted successfully",
-
-    }
-    cb(null, resdata);
-
-   } else if (response.statusCode == 500) {
-
-    var xml2js = require('xml2js');
-    var parser = new xml2js.Parser({
-     explicitArray: false,
-     tagNameProcessors: [xml2js.processors.stripPrefix]
-    });
-    parser.parseString(body, (err, result) => {
-     console.log(result.Envelope.Body.Fault.faultstring);
-
-     var resdata = {
-      "errorcode": response.statusCode,
-      "message": result.Envelope.Body.Fault.faultstring
-
-     }
-     cb(resdata);
-    });
-
-   } else {
-    var resdata = {
-     "errorcode": response.statusCode,
-     "message": "Internal server error"
-
-    }
-    cb(resdata);
-
-   }
-   console.log('E', response.statusCode, response.statusMessage);
-  };
-  request(options, callback);
-
-
- }
-
-
- Organization.activateOrganization = (data, req, cb) => {
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-  let authuser = confs.Super_ADMIN_USER.authuser;
-  let authpassword = confs.Super_ADMIN_PASSWORD.authpassword;
-  let auth = "Basic " + new Buffer(authuser + ":" + authpassword).toString("base64");
-
-  let tenantDomain = data.tenantDomain;
-
-  let xml = template.getactivateTenantXml(tenantDomain);
-
-  var options = {
-   url: confs.Tenant.url,
-   method: 'POST',
-   body: xml,
-   headers: {
-    'Content-Type': 'text/xml',
-    'Accept-Encoding': 'gzip,deflate',
-    'Content-Length': xml.length,
-    'SOAPAction': confs.activateTenant.soapaction,
-    'Authorization': auth
-   }
-  };
-
-
-  let callback = (error, response, body) => {
-
-   if (!error && response.statusCode == 200) {
-    //console.log('Raw result', body);
-    var resdata = {
-     "message": "Tenant activated successfully",
-
-    }
-    cb(null, resdata);
-
-   } else if (response.statusCode == 500) {
-
-    var xml2js = require('xml2js');
-    var parser = new xml2js.Parser({
-     explicitArray: false,
-     tagNameProcessors: [xml2js.processors.stripPrefix]
-    });
-    parser.parseString(body, (err, result) => {
-     console.log(result.Envelope.Body.Fault.faultstring);
-
-     var resdata = {
-      "errorcode": response.statusCode,
-      "message": result.Envelope.Body.Fault.faultstring
-
-     }
-     cb(resdata);
-    });
-
-   } else {
-    var resdata = {
-     "errorcode": response.statusCode,
-     "message": "Internal server error"
-
-    }
-    cb(resdata);
-
-   }
-   console.log('E', response.statusCode, response.statusMessage);
-  };
-  request(options, callback);
-
-
- }
-
- Organization.deactivateOrganization = (data, req, cb) => {
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-  let authuser = confs.Super_ADMIN_USER.authuser;
-  let authpassword = confs.Super_ADMIN_PASSWORD.authpassword;
-  let auth = "Basic " + new Buffer(authuser + ":" + authpassword).toString("base64");
-
-  let tenantDomain = data.tenantDomain;
-
-  let xml = template.getdeactivateTenantXml(tenantDomain);
-
-  var options = {
-   url: confs.Tenant.url,
-   method: 'POST',
-   body: xml,
-   headers: {
-    'Content-Type': 'text/xml',
-    'Accept-Encoding': 'gzip,deflate',
-    'Content-Length': xml.length,
-    'SOAPAction': confs.deactivateTenant.soapaction,
-    'Authorization': auth
-   }
-  };
-
-
-  let callback = (error, response, body) => {
-
-   if (!error && response.statusCode == 200) {
-    //console.log('Raw result', body);
-    var resdata = {
-     "message": "Tenant deactivated successfully",
-
-    }
-    cb(null, resdata);
-
-   } else if (response.statusCode == 500) {
-
-    var xml2js = require('xml2js');
-    var parser = new xml2js.Parser({
-     explicitArray: false,
-     tagNameProcessors: [xml2js.processors.stripPrefix]
-    });
-    parser.parseString(body, (err, result) => {
-     console.log(result.Envelope.Body.Fault.faultstring);
-
-     var resdata = {
-      "errorcode": response.statusCode,
-      "message": result.Envelope.Body.Fault.faultstring
-
-     }
-     cb(resdata);
-    });
-
-   } else {
-    var resdata = {
-     "errorcode": response.statusCode,
-     "message": "Internal server error"
-
-    }
-    cb(resdata);
-
-   }
-   console.log('E', response.statusCode, response.statusMessage);
-  };
-  request(options, callback);
-
-
- }
-
-
 };

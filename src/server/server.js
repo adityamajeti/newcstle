@@ -24,6 +24,8 @@ boot(app, {
   'appRootDir': __dirname,
   'bootDirs': [
     `${__dirname}/boot`,
+    `${__dirname}/boot/definitions`,
+    `${__dirname}/boot/remotes`,
     `${__dirname}/boot/init`,
     `${__dirname}/boot/controllers`,
   ],

@@ -11,6 +11,8 @@ module.exports = (Organization) => {
     'createChangeStream',
     'upsertWithWhere',
     'deleteById',
+    'find',
+    'findById',
     'prototype.patchAttributes',
     'prototype.__create__domains',
     'prototype.__delete__domains',
@@ -30,59 +32,17 @@ module.exports = (Organization) => {
   });
 
   Organization.remoteMethod(
-    'addOrganization', {
-      description: "Add Organization",
-      accepts: [{
-          arg: 'data',
-          type: 'any',
-          http: { source: 'body' },
-          required: true
-        },
-        {
-          arg: 'req',
-          type: 'any',
-          http: { source: 'req' },
-          required: true
-        }
-      ],
-      returns: {
-        arg: 'tenants',
-        type: 'object',
-        root: true
-      },
-      http: {
-        path: '/addOrganization',
-        verb: 'post',
-        status: 200,
-        errorStatus: 400
-      }
-    }
-  );
-
-  Organization.remoteMethod(
     'getAllOrganizations', {
-      description: " Get All Organizations",
-      accepts: [{
-          arg: 'data',
-          type: 'any',
-          http: { source: 'body' },
-          required: true
-        },
-        {
-          arg: 'req',
-          type: 'any',
-          http: { source: 'req' },
-          required: true
-        }
-      ],
+      description: ' Get All Organizations',
+      accepts: [],
       returns: {
-        arg: 'tenants',
+        arg: 'Organization',
         type: 'object',
         root: true
       },
       http: {
-        path: '/getAllOrganizations',
-        verb: 'post',
+        path: '/',
+        verb: 'get',
         status: 200,
         errorStatus: 400
       }
@@ -91,28 +51,26 @@ module.exports = (Organization) => {
 
   Organization.remoteMethod(
     'updateOrganization', {
-      description: " update Organization",
+      description: 'update Organization',
       accepts: [{
-          arg: 'data',
-          type: 'any',
-          http: { source: 'body' },
-          required: true
-        },
-        {
-          arg: 'req',
-          type: 'any',
-          http: { source: 'req' },
-          required: true
-        }
-      ],
+        arg: 'id',
+        type: 'string',
+        http: { source: 'path' },
+        required: true
+      }, {
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' },
+        required: true
+      }],
       returns: {
-        arg: 'tenants',
+        arg: 'Organization',
         type: 'object',
         root: true
       },
       http: {
-        path: '/updateOrganization',
-        verb: 'post',
+        path: '/:id',
+        verb: 'put',
         status: 200,
         errorStatus: 400
       }
@@ -121,28 +79,21 @@ module.exports = (Organization) => {
 
   Organization.remoteMethod(
     'deleteOrganization', {
-      description: " delete Organization",
+      description: 'delete Organization',
       accepts: [{
-          arg: 'data',
-          type: 'any',
-          http: { source: 'body' },
-          required: true
-        },
-        {
-          arg: 'req',
-          type: 'any',
-          http: { source: 'req' },
-          required: true
-        }
-      ],
+        arg: 'tenantId',
+        type: 'string',
+        http: { source: 'path' },
+        required: true
+      }],
       returns: {
-        arg: 'tenants',
+        arg: 'info',
         type: 'object',
         root: true
       },
       http: {
-        path: '/deleteOrganization',
-        verb: 'post',
+        path: '/:tenantId',
+        verb: 'delete',
         status: 200,
         errorStatus: 400
       }
@@ -151,57 +102,25 @@ module.exports = (Organization) => {
 
   Organization.remoteMethod(
     'activateOrganization', {
-      description: " activate Organization",
+      description: ' activate Organization',
       accepts: [{
-          arg: 'data',
-          type: 'any',
-          http: { source: 'body' },
-          required: true
-        },
-        {
-          arg: 'req',
-          type: 'any',
-          http: { source: 'req' },
-          required: true
-        }
-      ],
+        arg: 'tenantId',
+        type: 'string',
+        http: { source: 'path' },
+        required: true
+      }, {
+        arg: 'active',
+        type: 'string',
+        http: { source: 'path' },
+        required: true
+      }],
       returns: {
-        arg: 'tenants',
+        arg: 'Organization',
         type: 'object',
         root: true
       },
       http: {
-        path: '/activateOrganization',
-        verb: 'post',
-        status: 200,
-        errorStatus: 400
-      }
-    }
-  );
-
-  Organization.remoteMethod(
-    'deactivateOrganization', {
-      description: " deactivate Organization",
-      accepts: [{
-          arg: 'data',
-          type: 'any',
-          http: { source: 'body' },
-          required: true
-        },
-        {
-          arg: 'req',
-          type: 'any',
-          http: { source: 'req' },
-          required: true
-        }
-      ],
-      returns: {
-        arg: 'tenants',
-        type: 'object',
-        root: true
-      },
-      http: {
-        path: '/deactivateOrganization',
+        path: '/:id/activate/:active',
         verb: 'post',
         status: 200,
         errorStatus: 400
