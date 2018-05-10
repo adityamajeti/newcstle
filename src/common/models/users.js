@@ -24,34 +24,6 @@ module.exports = (Users) => {
   });
 
   Users.remoteMethod(
-    'deleteUser', {
-      description: 'Delete User',
-      accepts: [{
-        arg: 'data',
-        type: 'any',
-        http: { source: 'body' },
-        required: true
-      }, {
-        arg: 'req',
-        type: 'any',
-        http: { source: 'req' },
-        required: true
-      }],
-      returns: {
-        arg: 'users',
-        type: 'object',
-        root: true
-      },
-      http: {
-        path: '/deleteUser',
-        verb: 'post',
-        status: 200,
-        errorStatus: 400
-      }
-    }
-  );
-
-  Users.remoteMethod(
     'updateCredential', {
       description: 'Update Credentials',
       accepts: [{
@@ -128,90 +100,6 @@ module.exports = (Users) => {
       },
       http: {
         path: '/getUserList',
-        verb: 'post',
-        status: 200,
-        errorStatus: 400
-      }
-    }
-  );
-
-  Users.remoteMethod(
-    'getUserProfile', {
-      description: 'get user profile',
-      accepts: [{
-        arg: 'data',
-        type: 'any',
-        http: { source: 'body' },
-        required: true
-      }, {
-        arg: 'req',
-        type: 'any',
-        http: { source: 'req' },
-        required: true
-      }],
-      returns: {
-        arg: 'users',
-        type: 'object',
-        root: true
-      },
-      http: {
-        path: '/getUserProfile',
-        verb: 'post',
-        status: 200,
-        errorStatus: 400
-      }
-    }
-  );
-
-  Users.remoteMethod(
-    'addUserClaims', {
-      description: 'Add User Claims',
-      accepts: [{
-        arg: 'data',
-        type: 'any',
-        http: { source: 'body' },
-        required: true
-      }, {
-        arg: 'req',
-        type: 'any',
-        http: { source: 'req' },
-        required: true
-      }],
-      returns: {
-        arg: 'users',
-        type: 'object',
-        root: true
-      },
-      http: {
-        path: '/addUserClaims',
-        verb: 'post',
-        status: 200,
-        errorStatus: 400
-      }
-    }
-  );
-
-  Users.remoteMethod(
-    'updateUserProfile', {
-      description: 'update user profile',
-      accepts: [{
-        arg: 'data',
-        type: 'any',
-        http: { source: 'body' },
-        required: true
-      }, {
-        arg: 'req',
-        type: 'any',
-        http: { source: 'req' },
-        required: true
-      }],
-      returns: {
-        arg: 'users',
-        type: 'object',
-        root: true
-      },
-      http: {
-        path: '/updateUserProfile',
         verb: 'post',
         status: 200,
         errorStatus: 400

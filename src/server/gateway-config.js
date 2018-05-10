@@ -35,9 +35,12 @@ module.exports = {
     'isExistingRole': 'urn:isExistingRole',
     'isExistingUser': 'urn:isExistingUser',
     'updateRoleListOfUser': 'urn:updateRoleListOfUser',
-    'getUserClaimValues': 'urn:getUserClaimValues',
+    'getUserClaimValue': 'urn:getUserClaimValue',
     'addUserClaimValue': 'urn:addUserClaimValue',
-    'setUserClaimValue': 'urn:setUserClaimValue'
+    'setUserClaimValue': 'urn:setUserClaimValue',
+    'getUserClaimValues': 'urn:getUserClaimValues',
+    'addUserClaimValues': 'urn:addUserClaimValues',
+    'setUserClaimValues': 'urn:setUserClaimValues'
   },
   'Profile': {
     'getUserProfile': 'urn:getUserProfile',

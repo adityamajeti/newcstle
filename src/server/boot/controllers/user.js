@@ -95,7 +95,7 @@ module.exports = (app) => {
 
     const xml = template.deleteUserXml(data.username);
 
-    var options = {
+    const options = {
       url: gConfig.URL.User,
       method: 'POST',
       body: xml,
@@ -109,41 +109,37 @@ module.exports = (app) => {
     };
 
     request(options, (error, response, body) => {
-      if (!error && (response.statusCode == 200 || response.statusCode == 202)) {
-        //console.log('Raw result', body);
-        var resdata = {
+      if (error) {
+        cb(error);
+      } else if (response && (response.statusCode == 200 || response.statusCode == 202)) {
+        cb(null, {
           'message': 'User deleted successfully',
-        }
-        cb(null, resdata);
-      } else if (response.statusCode == 500) {
-        var xml2js = require('xml2js');
-        var parser = new xml2js.Parser({
-          explicitArray: false,
-          tagNameProcessors: [xml2js.processors.stripPrefix]
-        });
-        parser.parseString(body, (err, result) => {
-          var resdata = {
-            'errorcode': response.statusCode,
-            'message': result.Envelope.Body.Fault.faultstring
-          }
-          cb(resdata);
         });
       } else {
-        var resdata = {
-          'errorcode': response.statusCode,
-          'message': 'Internal server error'
+        if (body) {
+          const parser = new xml2js.Parser({
+            explicitArray: false,
+            tagNameProcessors: [xml2js.processors.stripPrefix]
+          });
+          parser.parseString(body, (err, result) => {
+            if (err) {
+              cb(ErrorHandler('User deletion failed'));
+            } else {
+              cb(ErrorHandler(result.Envelope.Body.Fault.faultstring));
+            }
+          });
+        } else {
+          cb(ErrorHandler('User deletion failed'));
         }
-        cb(resdata);
       }
-      console.log('E', response.statusCode, response.statusMessage);
     });
   };
 
   Users.updateCredential = (data, req, cb) => {
-    const auth = `Basic ${new Buffer(`${data.username}:${data.oldpassword}`).toString('base64')}`;
-    const xml = template.getupdateCredentialsXml(data.username, data.oldpassword, data.newpassword);
+    const auth = `Basic ${new Buffer(`${req.UserInfo.username}:${data.oldpassword}`).toString('base64')}`;
+    const xml = template.updateCredentialsXml(data.username, data.oldpassword, data.newpassword);
 
-    var options = {
+    const options = {
       url: gConfig.URL.User,
       method: 'POST',
       body: xml,
@@ -157,50 +153,37 @@ module.exports = (app) => {
     };
 
     request(options, (error, response, body) => {
-      if (!error && (response.statusCode == 200 || response.statusCode == 202)) {
-        //console.log('Raw result', body);
-        var resdata = {
+      if (error) {
+        cb(error);
+      } else if (response && (response.statusCode == 200 || response.statusCode == 202)) {
+        cb(null, {
           'message': 'Password updated successfully',
-        }
-        cb(null, resdata);
-      } else if (response.statusCode == 500) {
-
-        var xml2js = require('xml2js');
-        var parser = new xml2js.Parser({
-          explicitArray: false,
-          tagNameProcessors: [xml2js.processors.stripPrefix]
-        });
-        parser.parseString(body, (err, result) => {
-          console.log(result.Envelope.Body.Fault.faultstring);
-
-          var resdata = {
-            'errorcode': response.statusCode,
-            'message': result.Envelope.Body.Fault.faultstring
-          }
-          cb(resdata);
         });
       } else {
-        var resdata = {
-          'errorcode': response.statusCode,
-          'message': 'Internal server error'
+        if (body) {
+          const parser = new xml2js.Parser({
+            explicitArray: false,
+            tagNameProcessors: [xml2js.processors.stripPrefix]
+          });
+          parser.parseString(body, (err, result) => {
+            if (err) {
+              cb(ErrorHandler('Password update failed'));
+            } else {
+              cb(ErrorHandler(result.Envelope.Body.Fault.faultstring));
+            }
+          });
+        } else {
+          cb(ErrorHandler('Password update failed'));
         }
-        cb(resdata);
       }
-      console.log('E', response.statusCode, response.statusMessage);
     });
   };
 
   Users.updateCredentialByAdmin = (data, req, cb) => {
-    let authuser = gConfig.Super_ADMIN_USER.authuser;
-    let authpassword = gConfig.Super_ADMIN_PASSWORD.authpassword;
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-    let auth = 'Basic ' + new Buffer(authuser + ':' + authpassword).toString('base64');
-    let username = data.username;
-    let newpassword = data.newpassword
+    const auth = `Basic ${new Buffer(`${req.UserInfo.username}:${data.adminPassword}`).toString('base64')}`;
+    const xml = template.updateCredentialsByAdminXml(data.username, data.newpassword);
 
-    let xml = template.getupdateCredentialsByAdminXml(username, newpassword);
-
-    var options = {
+    const options = {
       url: gConfig.URL.User,
       method: 'POST',
       body: xml,
@@ -208,58 +191,43 @@ module.exports = (app) => {
         'Content-Type': 'text/xml',
         'Accept-Encoding': 'gzip,deflate',
         'Content-Length': xml.length,
-        'SOAPAction': gConfig.updateCredentialByAdmin.soapaction,
+        'SOAPAction': gConfig.User.updateCredentialByAdmin,
         'Authorization': auth
       }
     };
 
-    let callback = (error, response, body) => {
-      if (!error && (response.statusCode == 200 || response.statusCode == 202)) {
-        //console.log('Raw result', body);
-        var resdata = {
+    request(options, (error, response, body) => {
+      if (error) {
+        cb(error);
+      } else if (response && (response.statusCode == 200 || response.statusCode == 202)) {
+        cb(null, {
           'message': 'Password updated successfully',
-        }
-        cb(null, resdata);
-      } else if (response.statusCode == 500) {
-        var xml2js = require('xml2js');
-        var parser = new xml2js.Parser({
-          explicitArray: false,
-          tagNameProcessors: [xml2js.processors.stripPrefix]
         });
-        parser.parseString(body, (err, result) => {
-          console.log(result.Envelope.Body.Fault.faultstring);
-
-          var resdata = {
-            'errorcode': response.statusCode,
-            'message': result.Envelope.Body.Fault.faultstring
-
-          }
-          cb(resdata);
-        });
-
       } else {
-        var resdata = {
-          'errorcode': response.statusCode,
-          'message': 'Internal server error'
-
+        if (body) {
+          const parser = new xml2js.Parser({
+            explicitArray: false,
+            tagNameProcessors: [xml2js.processors.stripPrefix]
+          });
+          parser.parseString(body, (err, result) => {
+            if (err) {
+              cb(ErrorHandler('Password update failed'));
+            } else {
+              cb(ErrorHandler(result.Envelope.Body.Fault.faultstring));
+            }
+          });
+        } else {
+          cb(ErrorHandler('Password update failed'));
         }
-        cb(resdata);
-
       }
-      console.log('E', response.statusCode, response.statusMessage);
-    };
-    request(options, callback);
+    });
   };
 
   Users.getUserList = (data, req, cb) => {
-    let authuser = gConfig.Super_ADMIN_USER.authuser;
-    let authpassword = gConfig.Super_ADMIN_PASSWORD.authpassword;
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-    let auth = 'Basic ' + new Buffer(authuser + ':' + authpassword).toString('base64');
-    let limit = data.limit;
-    let xml = template.getuserListXml(limit);
+    const auth = `Basic ${new Buffer(`${req.UserInfo.username}:${data.adminPassword}`).toString('base64')}`;
+    const xml = template.getuserListXml(data.limit);
 
-    var options = {
+    const options = {
       url: gConfig.URL.User,
       method: 'POST',
       body: xml,
@@ -267,242 +235,60 @@ module.exports = (app) => {
         'Content-Type': 'text/xml',
         'Accept-Encoding': 'gzip,deflate',
         'Content-Length': xml.length,
-        'SOAPAction': gConfig.listUsers.soapaction,
+        'SOAPAction': gConfig.User.listUsers,
         'Authorization': auth
       }
     };
 
     request(options, (error, response, body) => {
-      //console.log(response);
-      if (!error && response.statusCode == 200) {
-        //console.log('Raw result', body);
-        var xml2js = require('xml2js');
-        var parser = new xml2js.Parser({
+      if (error) {
+        cb(error);
+      } else if (response && (response.statusCode == 200 || response.statusCode == 202)) {
+        const parser = new xml2js.Parser({
           explicitArray: false,
           tagNameProcessors: [xml2js.processors.stripPrefix]
         });
 
         parser.parseString(body, (err, result) => {
-
-          var arraydata = [];
-
-          for (var inx = 0; inx < result.Envelope.Body.listUsersResponse.return.length; inx++) {
-
-            var usernames = result.Envelope.Body.listUsersResponse.return[inx];
-
-            arraydata.push({
-              usernames: usernames
-
+          if (result) {
+            // result.Envelope.Body.listUsersResponse.return
+            const lusers = _.map(result.Envelope.Body.listUsersResponse.return, (val) => {
+              return {
+                username: val,
+                tenantId: req.UserInfo.tenantId,
+                userId: uuidv5(`http://${req.UserInfo.tenantId}/${val}`, uuidv5.URL)
+              };
             });
-
-            if (inx == result.Envelope.Body.listUsersResponse.return.length - 1) {
-
-              cb(null, arraydata);
-
-            }
-
-
+            cb(null, lusers);
+          } else {
+            cb(ErrorHandler('Unable to fetch users'));
           }
-
-
-
         });
-
-
-
-      } else if (response.statusCode == 500) {
-
-        var xml2js = require('xml2js');
-        var parser = new xml2js.Parser({
-          explicitArray: false,
-          tagNameProcessors: [xml2js.processors.stripPrefix]
-        });
-        parser.parseString(body, (err, result) => {
-          console.log(result.Envelope.Body.Fault.faultstring);
-
-          var resdata = {
-            'errorcode': response.statusCode,
-            'message': result.Envelope.Body.Fault.faultstring
-
-          }
-          cb(resdata);
-        });
-
       } else {
-        var resdata = {
-          'errorcode': response.statusCode,
-          'message': 'Internal server error'
-
+        if (body) {
+          const parser = new xml2js.Parser({
+            explicitArray: false,
+            tagNameProcessors: [xml2js.processors.stripPrefix]
+          });
+          parser.parseString(body, (err, result) => {
+            if (err) {
+              cb(ErrorHandler('Unable to fetch users'));
+            } else {
+              cb(ErrorHandler(result.Envelope.Body.Fault.faultstring));
+            }
+          });
+        } else {
+          cb(ErrorHandler('Unable to fetch users'));
         }
-        cb(resdata);
-
       }
-      console.log('E', response.statusCode, response.statusMessage);
     });
-  };
-
-  Users.getUserProfile = (data, req, cb) => {
-    let authdetails = data.auth;
-    let username = data.username;
-    let authuser = authdetails[0].authuser;
-    let authpassword = authdetails[1].authpassword;
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-    let auth = 'Basic ' + new Buffer(authuser + ':' + authpassword).toString('base64');
-    let xml = template.getUserProfile(username);
-
-    var options = {
-      url: gConfig.URL.Profile,
-      method: 'POST',
-      body: xml,
-      headers: {
-        'Content-Type': 'text/xml',
-        'Accept-Encoding': 'gzip,deflate',
-        'Content-Length': xml.length,
-        'SOAPAction': gConfig.getProfile.soapaction,
-        'Authorization': auth
-      }
-    };
-
-    request(options, (error, response, body) => {
-      //console.log(response);
-      if (!error && response.statusCode == 200) {
-        //console.log('Raw result', body);
-        var xml2js = require('xml2js');
-        var parser = new xml2js.Parser({
-          explicitArray: false,
-          tagNameProcessors: [xml2js.processors.stripPrefix]
-        });
-
-        parser.parseString(body, (err, result) => {
-
-          var arraydata = [];
-          console.log(result.Envelope.Body.getUserProfileResponse.return.fieldValues.length);
-
-          for (var inx = 0; inx < result.Envelope.Body.getUserProfileResponse.return.fieldValues.length; inx++) {
-            var usernames = result.Envelope.Body.getUserProfileResponse.return.fieldValues[inx].displayName;
-            var value = result.Envelope.Body.getUserProfileResponse.return.fieldValues[inx].fieldValue;
-            var check = value.$;
-            if (check != undefined) {
-              value = '';
-            }
-
-            arraydata.push({
-              fieldname: usernames,
-              fieldvalue: value
-
-            });
-
-            if (inx == result.Envelope.Body.getUserProfileResponse.return.fieldValues.length - 1) {
-              cb(null, arraydata);
-            }
-          }
-        });
-      } else if (response.statusCode == 500) {
-
-        var xml2js = require('xml2js');
-        var parser = new xml2js.Parser({
-          explicitArray: false,
-          tagNameProcessors: [xml2js.processors.stripPrefix]
-        });
-        parser.parseString(body, (err, result) => {
-          console.log(result.Envelope.Body.Fault.faultstring);
-
-          var resdata = {
-            'errorcode': response.statusCode,
-            'message': result.Envelope.Body.Fault.faultstring
-
-          }
-          cb(resdata);
-        });
-
-      } else {
-        var resdata = {
-          'errorcode': response.statusCode,
-          'message': 'Internal server error'
-
-        }
-        cb(resdata);
-
-      }
-      console.log('E', response.statusCode, response.statusMessage);
-    });
-  };
-
-  Users.addUserClaims = (data, req, cb) => {
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-
-    let claimkeys = data.userattributes;
-    let authdetails = data.auth;
-    let username = data.username;
-    let auth = 'Basic ' + new Buffer(authdetails[0].authuser + ':' + authdetails[1].authpassword).toString('base64');
-    let xml = template.createUserClaimsXml(claimkeys, username);
-
-    var options = {
-      url: gConfig.URL.User,
-      method: 'POST',
-      body: xml,
-      headers: {
-        'Content-Type': 'text/xml',
-        'Accept-Encoding': 'gzip,deflate',
-        'Content-Length': xml.length,
-        'SOAPAction': gConfig.addUserClaim.soapaction,
-        'Authorization': auth
-      }
-    };
-
-
-
-    let callback = (error, response, body) => {
-
-      if (!error && (response.statusCode == 200 || response.statusCode == 202)) {
-        //console.log('Raw result', body);
-        var resdata = {
-          'message': 'User claim added successfully',
-
-        }
-        cb(null, resdata);
-
-      } else if (response.statusCode == 500) {
-
-        var xml2js = require('xml2js');
-        var parser = new xml2js.Parser({
-          explicitArray: false,
-          tagNameProcessors: [xml2js.processors.stripPrefix]
-        });
-        parser.parseString(body, (err, result) => {
-          console.log(result.Envelope.Body.Fault.faultstring);
-
-          var resdata = {
-            'errorcode': response.statusCode,
-            'message': result.Envelope.Body.Fault.faultstring
-
-          }
-          cb(resdata);
-        });
-
-      } else {
-        var resdata = {
-          'errorcode': response.statusCode,
-          'message': 'Internal server error'
-
-        }
-        cb(resdata);
-
-      }
-      console.log('E', response.statusCode, response.statusMessage);
-    };
-    request(options, callback);
   };
 
   Users.updateUserProfile = (data, req, cb) => {
-    let claimkeys = data.userattributes;
-    let authdetails = data.auth;
-    let username = data.username;
-    let auth = 'Basic ' + new Buffer(authdetails[0].authuser + ':' + authdetails[1].authpassword).toString('base64');
+    const auth = `Basic ${new Buffer(`${req.UserInfo.username}:${data.password}`).toString('base64')}`;
+    const xml = template.updateProfileXml(data.claims, data.username);
 
-    let xml = template.updateProfileXml(claimkeys, username);
-
-    var options = {
+    const options = {
       url: gConfig.URL.Profile,
       method: 'POST',
       body: xml,
@@ -510,48 +296,35 @@ module.exports = (app) => {
         'Content-Type': 'text/xml',
         'Accept-Encoding': 'gzip,deflate',
         'Content-Length': xml.length,
-        'SOAPAction': gConfig.updateProfile.soapaction,
+        'SOAPAction': gConfig.Profile.setUserProfile,
         'Authorization': auth
       }
     };
 
     request(options, (error, response, body) => {
-      if (!error && (response.statusCode == 200 || response.statusCode == 202)) {
-        //console.log('Raw result', body);
-        var resdata = {
+      if (error) {
+        cb(error);
+      } else if (response && (response.statusCode == 200 || response.statusCode == 202)) {
+        cb(null, {
           'message': 'User profile updated successfully',
-
-        }
-        cb(null, resdata);
-
-      } else if (response.statusCode == 500) {
-
-        var xml2js = require('xml2js');
-        var parser = new xml2js.Parser({
-          explicitArray: false,
-          tagNameProcessors: [xml2js.processors.stripPrefix]
         });
-        parser.parseString(body, (err, result) => {
-          console.log(result.Envelope.Body.Fault.faultstring);
-
-          var resdata = {
-            'errorcode': response.statusCode,
-            'message': result.Envelope.Body.Fault.faultstring
-
-          }
-          cb(resdata);
-        });
-
       } else {
-        var resdata = {
-          'errorcode': response.statusCode,
-          'message': 'Internal server error'
-
+        if (body) {
+          const parser = new xml2js.Parser({
+            explicitArray: false,
+            tagNameProcessors: [xml2js.processors.stripPrefix]
+          });
+          parser.parseString(body, (err, result) => {
+            if (err) {
+              cb(ErrorHandler('User profile update failed'));
+            } else {
+              cb(ErrorHandler(result.Envelope.Body.Fault.faultstring));
+            }
+          });
+        } else {
+          cb(ErrorHandler('User profile update failed'));
         }
-        cb(resdata);
-
       }
-      console.log('E', response.statusCode, response.statusMessage);
     });
   };
 };

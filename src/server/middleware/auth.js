@@ -19,7 +19,7 @@ module.exports = (options) => {
         'usertype': 'APPLICATION_USER',
         'version': '1.0.0',
         'tenantId': 'mycompany.com',
-        'userid': uuidv5(`http://mycompany.com/admin`, uuidv5.URL)
+        'userid': uuidv5('http://mycompany.com/admin', uuidv5.URL)
       };
       next();
     } else if (typeof req.headers['x-jwt-assertion'] != 'undefined') {
@@ -41,10 +41,10 @@ module.exports = (options) => {
       req.UserInfo.userId = req.JWTtoken['http://wso2.org/claims/userid'] ? req.JWTtoken['http://wso2.org/claims/userid'] : uuidv5(`http://${req.UserInfo.tenantId}/${req.UserInfo.username.replace(`@${req.UserInfo.tenantId}`, '')}`, uuidv5.URL);
 
       Users.exists(req.UserInfo.userId, (err, exists) => {
-        if(exists) {
+        if (exists) {
           next();
         } else {
-          const uprofile =_.clone(req.UserInfo);
+          const uprofile = _.clone(req.UserInfo);
           delete uprofile.usertype;
           delete uprofile.version;
           const orgprofile = {
@@ -54,7 +54,7 @@ module.exports = (options) => {
             address: uprofile.address
           };
           Organization.exists(uprofile.tenantId, (e, t) => {
-            if(!t || e) {
+            if (!t || e) {
               Organization.create(orgprofile, () => {
                 //
               });

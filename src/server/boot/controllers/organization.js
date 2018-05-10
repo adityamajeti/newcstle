@@ -350,8 +350,8 @@ module.exports = (app) => {
 
       request(options2, (error, response, body) => {
         if (response && (response.statusCode == 200 || response.statusCode == 202)) {
-         //
-        } else if(body) {
+          //
+        } else if (body) {
           //
         }
       });

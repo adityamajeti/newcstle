@@ -86,13 +86,13 @@ exports.gettenantIdXml = (req, res) => {
   return xml;
 };
 
-exports.getupdateCredentialsXml = (username, oldpassword, newpassword) => {
+exports.updateCredentialsXml = (username, oldpassword, newpassword) => {
   const xml = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.ws.um.carbon.wso2.org"><soapenv:Header/><soapenv:Body> <ser:updateCredential> <ser:userName>${username}</ser:userName><ser:newCredential>${newpassword}</ser:newCredential><ser:oldCredential>${oldpassword}</ser:oldCredential> </ser:updateCredential></soapenv:Body></soapenv:Envelope>`;
 
   return xml;
 };
 
-exports.getupdateCredentialsByAdminXml = (username, newpassword) => {
+exports.updateCredentialsByAdminXml = (username, newpassword) => {
   const xml = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.ws.um.carbon.wso2.org"><soapenv:Header/><soapenv:Body> <ser:updateCredentialByAdmin><ser:userName>${username}</ser:userName><ser:newCredential>${newpassword}</ser:newCredential></ser:updateCredentialByAdmin></soapenv:Body></soapenv:Envelope>`;
 
   return xml;
@@ -152,25 +152,9 @@ exports.updateUserRoleCreationXml = (username, newrole) => {
   return xml;
 };
 
-exports.getUserProfile = (username) => {
-  const xml = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mgt="http://mgt.profile.user.identity.carbon.wso2.org"><soapenv:Header/><soapenv:Body> <mgt:getUserProfile><mgt:username>${username}</mgt:username><mgt:profileName>default</mgt:profileName></mgt:getUserProfile></soapenv:Body></soapenv:Envelope>`;
-
-  return xml;
-};
-
 exports.createUserClaimsXml = (claimkeys, username) => {
   const xml = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.ws.um.carbon.wso2.org" xmlns:xsd="http://common.mgt.user.carbon.wso2.org/xsd"><soapenv:Header/><soapenv:Body><ser:addUserClaimValues><ser:userName>${username}</ser:userName><ser:claimURI>http://wso2.org/claims/${claimkeys[0].key}</ser:claimURI><ser:claimValue>${claimkeys[0].value}</ser:claimValue><ser:profileName>default</ser:profileName></ser:addUserClaimValues></soapenv:Body></soapenv:Envelope>`;
 
-  return xml;
-};
-
-exports.updateProfileXml = (claimkeys, username) => {
-  let claimsXml = '';
-  _.each(claimkeys, (cl) => {
-    claimsXml += `<xsd:fieldValues><xsd:claimUri>http://wso2.org/claims/${cl.key}</xsd:claimUri><xsd:fieldValue>${cl.value}</xsd:fieldValue></xsd:fieldValues>`;
-  });
-
-  const xml = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mgt="http://mgt.profile.user.identity.carbon.wso2.org" xmlns:xsd="http://mgt.profile.user.identity.carbon.wso2.org/xsd"><soapenv:Header/><soapenv:Body><mgt:setUserProfile><mgt:username>${username}</mgt:username><mgt:profile>${claimsXml}<xsd:profileName>default</xsd:profileName></mgt:profile></mgt:setUserProfile></soapenv:Body></soapenv:Envelope>`;
   return xml;
 };
 
