@@ -64,7 +64,11 @@ module.exports = (app) => {
         const UserProfile = {
           tenantId: data.tenantId,
           username: data.adminUsername,
-          userId: uuidv5(`http://${data.tenantId}/${data.adminUsername}`, uuidv5.URL)
+          userId: uuidv5(`http://${data.tenantId}/${data.adminUsername}`, uuidv5.URL),
+          firstname: data.firstname,
+          lastname: data.lastname,
+          address: data.address,
+          roles: ['Internal/subscriber', 'Internal/creator', 'Internal/publisher', 'Internal/everyone', 'admin', 'ORGANIZATION_ADMIN']
         };
         cb(null, orgProfile);
         Organization.findById(orgProfile.tenantId, (e, org) => {
@@ -87,7 +91,7 @@ module.exports = (app) => {
             });
           }
         });
-        Organization.addRolesToNewTenant(data);
+        Organization.addRolesToNewTenant(data, UserProfile);
       } else {
         if (body) {
           const parser = new xml2js.Parser({
@@ -198,7 +202,7 @@ module.exports = (app) => {
     request(options, (error, response, body) => {
       if (error) {
         cb(error);
-      } else if (response && response.statusCode == 200) {
+      } else if (response && (response.statusCode == 200 || response.statusCode == 202)) {
         cb(null, {
           'message': 'Organization deleted successfully'
         });
@@ -256,7 +260,7 @@ module.exports = (app) => {
     request(options, (error, response, body) => {
       if (error) {
         cb(error);
-      } else if (response && response.statusCode == 200) {
+      } else if (response && (response.statusCode == 200 || response.statusCode == 202)) {
         Organization.findById(tenantId, (er, td) => {
           if (td) {
             td.status = status === 'active' ? status : 'inactive';
@@ -288,7 +292,7 @@ module.exports = (app) => {
     });
   };
 
-  Organization.addRolesToNewTenant = (data) => {
+  Organization.addRolesToNewTenant = (data, UserProfile) => {
     const domainauth = `Basic ${new Buffer(`${data.adminUsername}@${data.tenantId}:${data.adminPassword}`).toString('base64')}`;
     const addOrgAdminRoleToUser = template.updateUserRoleCreationXml(data.adminUsername, 'ORGANIZATION_ADMIN');
 
@@ -329,6 +333,28 @@ module.exports = (app) => {
           //
         }
       });
+
+      const userIdClaim = template.setUserClaimXml('userid', UserProfile.userId, UserProfile.username);
+      const options2 = {
+        url: gConfig.URL.User,
+        method: 'POST',
+        body: userIdClaim,
+        headers: {
+          'Content-Type': 'application/soap+xml;charset=UTF-8;',
+          'Accept-Encoding': 'gzip,deflate',
+          'Content-Length': userIdClaim.length,
+          'SOAPAction': gConfig.User.setUserClaimValue,
+          'Authorization': domainauth
+        }
+      };
+
+      request(options2, (error, response, body) => {
+        if (response && (response.statusCode == 200 || response.statusCode == 202)) {
+         //
+        } else if(body) {
+          //
+        }
+      });
     });
   };
 
@@ -364,7 +390,7 @@ module.exports = (app) => {
         'tenantId': ctx.where.id
       }
     }, (e, usrs) => {
-      if(usrs) {
+      if (usrs) {
         asyncLib.each(usrs, (usr, nt) => {
           usr.destroy(() => {
             nt();

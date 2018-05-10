@@ -4,8 +4,10 @@
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
-    "realmRequired": true,
-    "realmDelimiter": ":"
+    "validateUpsert": true
+  },
+  "mixins": {
+    "Timestamp": {}
   },
   "properties": {
     "userId": {

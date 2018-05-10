@@ -18,9 +18,6 @@ module.exports = (Organization) => {
     'prototype.__delete__users',
     'prototype.__destroyById__users',
     'prototype.__updateById__users',
-    'prototype.__get__users',
-    'prototype.__findById__users',
-    'prototype.__count__users',
   ];
 
   _.each(methodsToDisable, (method) => {

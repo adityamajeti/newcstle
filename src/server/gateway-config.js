@@ -34,11 +34,13 @@ module.exports = {
     'listUsers': 'urn:listUsers',
     'isExistingRole': 'urn:isExistingRole',
     'isExistingUser': 'urn:isExistingUser',
-    'updateRoleListOfUser': 'urn:updateRoleListOfUser'
+    'updateRoleListOfUser': 'urn:updateRoleListOfUser',
+    'getUserClaimValues': 'urn:getUserClaimValues',
+    'addUserClaimValue': 'urn:addUserClaimValue',
+    'setUserClaimValue': 'urn:setUserClaimValue'
   },
   'Profile': {
     'getUserProfile': 'urn:getUserProfile',
-    'addUserClaimValue': 'urn:addUserClaimValue',
     'setUserProfile': 'urn:setUserProfile'
   },
   'Super_User_Permission': {

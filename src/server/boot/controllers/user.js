@@ -33,11 +33,23 @@ module.exports = (app) => {
   };
 
   Users.addUser = (data, req, cb) => {
-    const auth = `Basic ${new Buffer(`${req.UserInfo.username}:${data.authpassword}`).toString('base64')}`;
+    const auth = `Basic ${new Buffer(`${req.UserInfo.username}:${data.adminPassword}`).toString('base64')}`;
+    const userId = uuidv5(`http://${req.UserInfo.tenantId}/${data.username}`, uuidv5.URL);
+    const commonAttributes = {
+      'emailaddress': data.email || null,
+      'userid': userId,
+      'givenname': data.firstname,
+      'lastname': data.lastname,
+      'mobile': data.mobile || null,
+      'addresses': data.address || null
+    };
+    const uprofile = _.clone(data);
+    uprofile.userId = userId;
+    uprofile.tenantId = req.UserInfo.tenantId;
+    uprofile.roles.push('Internal/everyone');
+    const xml = template.createUserXml(data.username, data.password, data.roles || [], commonAttributes, data.attributes || []);
 
-    let xml = template.createUserXml(data.roles, data.claims, data.username, data.password);
-
-    var options = {
+    const options = {
       url: gConfig.URL.User,
       method: 'POST',
       body: xml,
@@ -51,10 +63,56 @@ module.exports = (app) => {
     };
 
     request(options, (error, response, body) => {
+      if (error) {
+        cb(error);
+      } else if (response && (response.statusCode == 200 || response.statusCode == 202)) {
+        Users.create(uprofile, (e, u) => {
+          //
+        });
+        cb(null, uprofile);
+      } else {
+        if (body) {
+          const parser = new xml2js.Parser({
+            explicitArray: false,
+            tagNameProcessors: [xml2js.processors.stripPrefix]
+          });
+          parser.parseString(body, (err, result) => {
+            if (err) {
+              cb(ErrorHandler('User creation failed'));
+            } else {
+              cb(ErrorHandler(result.Envelope.Body.Fault.faultstring));
+            }
+          });
+        } else {
+          cb(ErrorHandler('User creation failed'));
+        }
+      }
+    });
+  };
+
+  Users.deleteUser = (data, req, cb) => {
+    const auth = `Basic ${new Buffer(`${req.UserInfo.username}:${data.adminPassword}`).toString('base64')}`;
+
+    const xml = template.deleteUserXml(data.username);
+
+    var options = {
+      url: gConfig.URL.User,
+      method: 'POST',
+      body: xml,
+      headers: {
+        'Content-Type': 'text/xml',
+        'Accept-Encoding': 'gzip,deflate',
+        'Content-Length': xml.length,
+        'SOAPAction': gConfig.User.deleteUser,
+        'Authorization': auth
+      }
+    };
+
+    request(options, (error, response, body) => {
       if (!error && (response.statusCode == 200 || response.statusCode == 202)) {
         //console.log('Raw result', body);
         var resdata = {
-          'message': 'User created successfully',
+          'message': 'User deleted successfully',
         }
         cb(null, resdata);
       } else if (response.statusCode == 500) {
@@ -64,8 +122,6 @@ module.exports = (app) => {
           tagNameProcessors: [xml2js.processors.stripPrefix]
         });
         parser.parseString(body, (err, result) => {
-          console.log(result.Envelope.Body.Fault.faultstring);
-
           var resdata = {
             'errorcode': response.statusCode,
             'message': result.Envelope.Body.Fault.faultstring
@@ -83,72 +139,9 @@ module.exports = (app) => {
     });
   };
 
-  Users.deleteUser = (data, req, cb) => {
-    let authuser = gConfig.Super_ADMIN_USER.authuser;
-    let authpassword = gConfig.Super_ADMIN_PASSWORD.authpassword;
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-    let auth = 'Basic ' + new Buffer(authuser + ':' + authpassword).toString('base64');
-    let username = data.username;
-
-    let xml = template.deleteUserXml(username);
-
-    var options = {
-      url: gConfig.URL.User,
-      method: 'POST',
-      body: xml,
-      headers: {
-        'Content-Type': 'text/xml',
-        'Accept-Encoding': 'gzip,deflate',
-        'Content-Length': xml.length,
-        'SOAPAction': gConfig.deleteUser.soapaction,
-        'Authorization': auth
-      }
-    };
-
-    let callback = (error, response, body) => {
-      if (!error && (response.statusCode == 200 || response.statusCode == 202)) {
-        //console.log('Raw result', body);
-        var resdata = {
-          'message': 'User deleted successfully',
-        }
-        cb(null, resdata);
-      } else if (response.statusCode == 500) {
-        var xml2js = require('xml2js');
-        var parser = new xml2js.Parser({
-          explicitArray: false,
-          tagNameProcessors: [xml2js.processors.stripPrefix]
-        });
-        parser.parseString(body, (err, result) => {
-          console.log(result.Envelope.Body.Fault.faultstring);
-
-          var resdata = {
-            'errorcode': response.statusCode,
-            'message': result.Envelope.Body.Fault.faultstring
-          }
-          cb(resdata);
-        });
-      } else {
-        var resdata = {
-          'errorcode': response.statusCode,
-          'message': 'Internal server error'
-        }
-        cb(resdata);
-      }
-      console.log('E', response.statusCode, response.statusMessage);
-    };
-    request(options, callback);
-  };
-
   Users.updateCredential = (data, req, cb) => {
-    let authuser = gConfig.Super_ADMIN_USER.authuser;
-    let authpassword = gConfig.Super_ADMIN_PASSWORD.authpassword;
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-    let auth = 'Basic ' + new Buffer(authuser + ':' + authpassword).toString('base64');
-    let username = data.username;
-    let oldpassword = data.oldpassword;
-    let newpassword = data.newpassword
-
-    let xml = template.getupdateCredentialsXml(username, oldpassword, newpassword);
+    const auth = `Basic ${new Buffer(`${data.username}:${data.oldpassword}`).toString('base64')}`;
+    const xml = template.getupdateCredentialsXml(data.username, data.oldpassword, data.newpassword);
 
     var options = {
       url: gConfig.URL.User,
@@ -158,13 +151,12 @@ module.exports = (app) => {
         'Content-Type': 'text/xml',
         'Accept-Encoding': 'gzip,deflate',
         'Content-Length': xml.length,
-        'SOAPAction': gConfig.updateCredentials.soapaction,
+        'SOAPAction': gConfig.User.updateCredential,
         'Authorization': auth
       }
     };
 
-    let callback = (error, response, body) => {
-
+    request(options, (error, response, body) => {
       if (!error && (response.statusCode == 200 || response.statusCode == 202)) {
         //console.log('Raw result', body);
         var resdata = {
@@ -195,8 +187,7 @@ module.exports = (app) => {
         cb(resdata);
       }
       console.log('E', response.statusCode, response.statusMessage);
-    };
-    request(options, callback);
+    });
   };
 
   Users.updateCredentialByAdmin = (data, req, cb) => {
@@ -258,14 +249,9 @@ module.exports = (app) => {
       console.log('E', response.statusCode, response.statusMessage);
     };
     request(options, callback);
-
-
-
-  }
-
+  };
 
   Users.getUserList = (data, req, cb) => {
-
     let authuser = gConfig.Super_ADMIN_USER.authuser;
     let authpassword = gConfig.Super_ADMIN_PASSWORD.authpassword;
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -286,8 +272,7 @@ module.exports = (app) => {
       }
     };
 
-
-    let callback = (error, response, body) => {
+    request(options, (error, response, body) => {
       //console.log(response);
       if (!error && response.statusCode == 200) {
         //console.log('Raw result', body);
@@ -353,16 +338,10 @@ module.exports = (app) => {
 
       }
       console.log('E', response.statusCode, response.statusMessage);
-    };
-    request(options, callback);
-
-
-
-  }
-
+    });
+  };
 
   Users.getUserProfile = (data, req, cb) => {
-
     let authdetails = data.auth;
     let username = data.username;
     let authuser = authdetails[0].authuser;
@@ -383,9 +362,8 @@ module.exports = (app) => {
         'Authorization': auth
       }
     };
-    console.log(options);
 
-    let callback = (error, response, body) => {
+    request(options, (error, response, body) => {
       //console.log(response);
       if (!error && response.statusCode == 200) {
         //console.log('Raw result', body);
@@ -401,7 +379,6 @@ module.exports = (app) => {
           console.log(result.Envelope.Body.getUserProfileResponse.return.fieldValues.length);
 
           for (var inx = 0; inx < result.Envelope.Body.getUserProfileResponse.return.fieldValues.length; inx++) {
-
             var usernames = result.Envelope.Body.getUserProfileResponse.return.fieldValues[inx].displayName;
             var value = result.Envelope.Body.getUserProfileResponse.return.fieldValues[inx].fieldValue;
             var check = value.$;
@@ -416,20 +393,10 @@ module.exports = (app) => {
             });
 
             if (inx == result.Envelope.Body.getUserProfileResponse.return.fieldValues.length - 1) {
-
               cb(null, arraydata);
-
             }
-
-
           }
-
-
-
         });
-
-
-
       } else if (response.statusCode == 500) {
 
         var xml2js = require('xml2js');
@@ -458,25 +425,16 @@ module.exports = (app) => {
 
       }
       console.log('E', response.statusCode, response.statusMessage);
-    };
-    request(options, callback);
-
-
-
-  }
+    });
+  };
 
   Users.addUserClaims = (data, req, cb) => {
-
-
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
     let claimkeys = data.userattributes;
     let authdetails = data.auth;
     let username = data.username;
     let auth = 'Basic ' + new Buffer(authdetails[0].authuser + ':' + authdetails[1].authpassword).toString('base64');
-
-
-
     let xml = template.createUserClaimsXml(claimkeys, username);
 
     var options = {
@@ -534,24 +492,13 @@ module.exports = (app) => {
       console.log('E', response.statusCode, response.statusMessage);
     };
     request(options, callback);
-
-
-
-
-  }
-
+  };
 
   Users.updateUserProfile = (data, req, cb) => {
-
-
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-
     let claimkeys = data.userattributes;
     let authdetails = data.auth;
     let username = data.username;
     let auth = 'Basic ' + new Buffer(authdetails[0].authuser + ':' + authdetails[1].authpassword).toString('base64');
-
-
 
     let xml = template.updateProfileXml(claimkeys, username);
 
@@ -568,10 +515,7 @@ module.exports = (app) => {
       }
     };
 
-    console.log(options);
-
-    let callback = (error, response, body) => {
-      console.log(response.statusCode);
+    request(options, (error, response, body) => {
       if (!error && (response.statusCode == 200 || response.statusCode == 202)) {
         //console.log('Raw result', body);
         var resdata = {
@@ -608,12 +552,6 @@ module.exports = (app) => {
 
       }
       console.log('E', response.statusCode, response.statusMessage);
-    };
-    request(options, callback);
-
-
-
-
-  }
-
+    });
+  };
 };
