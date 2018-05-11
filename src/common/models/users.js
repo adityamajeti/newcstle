@@ -78,4 +78,32 @@ module.exports = (Users) => {
       }
     }
   );
+
+  Users.remoteMethod(
+    'findByUsername', {
+      description: 'find User by username',
+      accepts: [{
+        arg: 'username',
+        type: 'string',
+        http: { source: 'path' },
+        required: true
+      }, {
+        arg: 'req',
+        type: 'any',
+        http: { source: 'req' },
+        required: true
+      }],
+      returns: {
+        arg: 'users',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/findByUsername/:username',
+        verb: 'post',
+        status: 200,
+        errorStatus: 400
+      }
+    }
+  );
 };

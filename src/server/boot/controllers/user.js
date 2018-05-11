@@ -328,12 +328,12 @@ module.exports = (app) => {
     });
   };
 
-  Users.findByUsername = (username, tenantId, cb) => {
+  Users.findByUsername = (username, req, cb) => {
     Users.findOne({
       'where': {
         'and': [
           { 'username': username },
-          { 'tenantId': tenantId }
+          { 'tenantId': req.UserInfo.tenantId }
         ]
       }
     }, cb);
