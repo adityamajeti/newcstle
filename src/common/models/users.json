@@ -4,8 +4,10 @@
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
-    "realmRequired": true,
-    "realmDelimiter": ":"
+    "validateUpsert": true
+  },
+  "mixins": {
+    "Timestamp": {}
   },
   "properties": {
     "userId": {
@@ -20,6 +22,24 @@
     "tenantId": {
       "type": "string",
       "required": true
+    },
+    "firstname": {
+      "type": "string"
+    },
+    "lastname": {
+      "type": "string"
+    },
+    "roles": {
+      "type": ["string"]
+    },
+    "email": {
+      "type": "string"
+    },
+    "mobile": {
+      "type": "string"
+    },
+    "attributes": {
+      "type": ["object"]
     }
   },
   "validations": [],

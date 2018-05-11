@@ -1,0 +1,16 @@
+{
+  "elastic":
+  {
+    "index": "atlantiscore",
+    "hosts": [
+    {
+      "host": "127.0.0.1",
+      "port": 9200
+    }]
+  },
+  "wso2": {
+  	"baseURL": "https://127.0.0.1:9443",
+  	"adminUsername": "admin",
+  	"adminPassword": "admin"
+  }
+}

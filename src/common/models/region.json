@@ -18,7 +18,7 @@
       "type": "string",
       "required": true
     },
-    "address": {
+    "location": {
       "type": "object",
       "required": true
     },

@@ -10,8 +10,6 @@ module.exports = (Organization) => {
     'replaceOrCreate',
     'createChangeStream',
     'upsertWithWhere',
-    'deleteById',
-    'prototype.patchAttributes',
     'prototype.__create__domains',
     'prototype.__delete__domains',
     'prototype.__destroyById__domains',
@@ -20,12 +18,56 @@ module.exports = (Organization) => {
     'prototype.__delete__users',
     'prototype.__destroyById__users',
     'prototype.__updateById__users',
-    'prototype.__get__users',
-    'prototype.__findById__users',
-    'prototype.__count__users',
   ];
 
   _.each(methodsToDisable, (method) => {
     Organization.disableRemoteMethodByName(method);
   });
+
+  Organization.remoteMethod(
+    'syncAllOrganizations', {
+      description: ' Sync All Organizations from WSO2',
+      accepts: [],
+      returns: {
+        arg: 'Organization',
+        type: 'any',
+        root: true
+      },
+      http: {
+        path: '/sync',
+        verb: 'post',
+        status: 200,
+        errorStatus: 400
+      }
+    }
+  );
+
+  Organization.remoteMethod(
+    'activateOrganization', {
+      description: ' activate Organization',
+      accepts: [{
+        arg: 'id',
+        type: 'string',
+        http: { source: 'path' },
+        required: true
+      }, {
+        arg: 'status',
+        type: 'string',
+        http: { source: 'path' },
+        description: 'active / inactive',
+        required: true
+      }],
+      returns: {
+        arg: 'Organization',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/:id/activate/:status',
+        verb: 'post',
+        status: 200,
+        errorStatus: 400
+      }
+    }
+  );
 };

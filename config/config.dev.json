@@ -1,0 +1,17 @@
+{
+  "elastic":
+  {
+    "index": "atlantiscore",
+    "hosts": [
+    {
+      "host": "52.23.11.19",
+      "port": 80,
+      "auth": "elasticsearch:zee9OhK5ahthole"
+    }]
+  },
+  "wso2": {
+    "baseURL": "https://127.0.0.1:9443",
+    "adminUsername": "admin",
+    "adminPassword": "admin"
+  }
+}

@@ -8,12 +8,11 @@ module.exports = (app) => {
     Region,
     Domain,
   } = app.models;
-
+  
   // tenantId injector
   /*const methodACLInjector = {};
-
   methodACLInjector['belongsTo'] = {}
-
+  
   methodACLInjector['belongsTo']['find'] = (field, value, filter) => {
     const injectField = {};
     injectField[field] = value;

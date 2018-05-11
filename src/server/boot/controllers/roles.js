@@ -32,22 +32,11 @@ module.exports = (app) => {
     return error;
   };
 
-  Users.addUser = (data, req, cb) => {
+  const Role = {};
+
+  Role.addRole = (data, req, cb) => {
     const auth = `Basic ${new Buffer(`${req.UserInfo.username}:${data.adminPassword}`).toString('base64')}`;
-    const userId = uuidv5(`http://${req.UserInfo.tenantId}/${data.username}`, uuidv5.URL);
-    const commonAttributes = {
-      'emailaddress': data.email || null,
-      'userid': userId,
-      'givenname': data.firstname,
-      'lastname': data.lastname,
-      'mobile': data.mobile || null,
-      'addresses': data.address || null
-    };
-    const uprofile = _.clone(data);
-    uprofile.userId = userId;
-    uprofile.tenantId = req.UserInfo.tenantId;
-    uprofile.roles.push('Internal/everyone');
-    const xml = template.createUserXml(data.username, data.password, data.roles || [], commonAttributes, data.attributes || []);
+    const xml = template.getaddRoleXml(data.role);
 
     const options = {
       url: gConfig.URL.User,
@@ -57,53 +46,7 @@ module.exports = (app) => {
         'Content-Type': 'text/xml',
         'Accept-Encoding': 'gzip,deflate',
         'Content-Length': xml.length,
-        'SOAPAction': gConfig.User.addUser,
-        'Authorization': auth
-      }
-    };
-
-    request(options, (error, response, body) => {
-      if (error) {
-        cb(error);
-      } else if (response && (response.statusCode == 200 || response.statusCode == 202)) {
-        Users.create(uprofile, (e, u) => {
-          //
-        });
-        cb(null, uprofile);
-      } else {
-        if (body) {
-          const parser = new xml2js.Parser({
-            explicitArray: false,
-            tagNameProcessors: [xml2js.processors.stripPrefix]
-          });
-          parser.parseString(body, (err, result) => {
-            if (err) {
-              cb(ErrorHandler('User creation failed'));
-            } else {
-              cb(ErrorHandler(result.Envelope.Body.Fault.faultstring));
-            }
-          });
-        } else {
-          cb(ErrorHandler('User creation failed'));
-        }
-      }
-    });
-  };
-
-  Users.deleteUser = (data, req, cb) => {
-    const auth = `Basic ${new Buffer(`${req.UserInfo.username}:${data.adminPassword}`).toString('base64')}`;
-
-    const xml = template.deleteUserXml(data.username);
-
-    const options = {
-      url: gConfig.URL.User,
-      method: 'POST',
-      body: xml,
-      headers: {
-        'Content-Type': 'text/xml',
-        'Accept-Encoding': 'gzip,deflate',
-        'Content-Length': xml.length,
-        'SOAPAction': gConfig.User.deleteUser,
+        'SOAPAction': gConfig.User.addRole,
         'Authorization': auth
       }
     };
@@ -113,7 +56,7 @@ module.exports = (app) => {
         cb(error);
       } else if (response && (response.statusCode == 200 || response.statusCode == 202)) {
         cb(null, {
-          'message': 'User deleted successfully',
+          'message': 'Role created successfully'
         });
       } else {
         if (body) {
@@ -123,21 +66,21 @@ module.exports = (app) => {
           });
           parser.parseString(body, (err, result) => {
             if (err) {
-              cb(ErrorHandler('User deletion failed'));
+              cb(ErrorHandler('Role creation failed'));
             } else {
               cb(ErrorHandler(result.Envelope.Body.Fault.faultstring));
             }
           });
         } else {
-          cb(ErrorHandler('User deletion failed'));
+          cb(ErrorHandler('Role creation failed'));
         }
       }
     });
   };
 
-  Users.updateCredential = (data, req, cb) => {
-    const auth = `Basic ${new Buffer(`${req.UserInfo.username}:${data.oldpassword}`).toString('base64')}`;
-    const xml = template.updateCredentialsXml(data.username, data.oldpassword, data.newpassword);
+  Role.deleteRole = (data, req, cb) => {
+    const auth = `Basic ${new Buffer(`${req.UserInfo.username}:${data.adminPassword}`).toString('base64')}`;
+    const xml = template.deleteRoleXml(data.role);
 
     const options = {
       url: gConfig.URL.User,
@@ -147,7 +90,7 @@ module.exports = (app) => {
         'Content-Type': 'text/xml',
         'Accept-Encoding': 'gzip,deflate',
         'Content-Length': xml.length,
-        'SOAPAction': gConfig.User.updateCredential,
+        'SOAPAction': gConfig.User.deleteRole,
         'Authorization': auth
       }
     };
@@ -157,7 +100,7 @@ module.exports = (app) => {
         cb(error);
       } else if (response && (response.statusCode == 200 || response.statusCode == 202)) {
         cb(null, {
-          'message': 'Password updated successfully',
+          'message': 'Role deleted successfully'
         });
       } else {
         if (body) {
@@ -167,21 +110,21 @@ module.exports = (app) => {
           });
           parser.parseString(body, (err, result) => {
             if (err) {
-              cb(ErrorHandler('Password update failed'));
+              cb(ErrorHandler('Role deletion failed'));
             } else {
               cb(ErrorHandler(result.Envelope.Body.Fault.faultstring));
             }
           });
         } else {
-          cb(ErrorHandler('Password update failed'));
+          cb(ErrorHandler('Role deletion failed'));
         }
       }
     });
   };
 
-  Users.updateCredentialByAdmin = (data, req, cb) => {
+  Role.getAllRoles = (data, req, cb) => {
     const auth = `Basic ${new Buffer(`${req.UserInfo.username}:${data.adminPassword}`).toString('base64')}`;
-    const xml = template.updateCredentialsByAdminXml(data.username, data.newpassword);
+    const xml = template.getallRolesXml();
 
     const options = {
       url: gConfig.URL.User,
@@ -191,51 +134,7 @@ module.exports = (app) => {
         'Content-Type': 'text/xml',
         'Accept-Encoding': 'gzip,deflate',
         'Content-Length': xml.length,
-        'SOAPAction': gConfig.User.updateCredentialByAdmin,
-        'Authorization': auth
-      }
-    };
-
-    request(options, (error, response, body) => {
-      if (error) {
-        cb(error);
-      } else if (response && (response.statusCode == 200 || response.statusCode == 202)) {
-        cb(null, {
-          'message': 'Password updated successfully',
-        });
-      } else {
-        if (body) {
-          const parser = new xml2js.Parser({
-            explicitArray: false,
-            tagNameProcessors: [xml2js.processors.stripPrefix]
-          });
-          parser.parseString(body, (err, result) => {
-            if (err) {
-              cb(ErrorHandler('Password update failed'));
-            } else {
-              cb(ErrorHandler(result.Envelope.Body.Fault.faultstring));
-            }
-          });
-        } else {
-          cb(ErrorHandler('Password update failed'));
-        }
-      }
-    });
-  };
-
-  Users.getUserList = (data, req, cb) => {
-    const auth = `Basic ${new Buffer(`${req.UserInfo.username}:${data.adminPassword}`).toString('base64')}`;
-    const xml = template.getuserListXml(data.limit);
-
-    const options = {
-      url: gConfig.URL.User,
-      method: 'POST',
-      body: xml,
-      headers: {
-        'Content-Type': 'text/xml',
-        'Accept-Encoding': 'gzip,deflate',
-        'Content-Length': xml.length,
-        'SOAPAction': gConfig.User.listUsers,
+        'SOAPAction': gConfig.User.getRoleNames,
         'Authorization': auth
       }
     };
@@ -251,15 +150,130 @@ module.exports = (app) => {
 
         parser.parseString(body, (err, result) => {
           if (result) {
-            // result.Envelope.Body.listUsersResponse.return
-            const lusers = _.map(result.Envelope.Body.listUsersResponse.return, (val) => {
+            const roles = _.map(result.Envelope.Body.getRoleNamesResponse.return, (role) => {
+              return {
+                name: role
+              };
+            });
+            cb(null, roles);
+          } else {
+            cb(ErrorHandler('Unable to fetch roles'));
+          }
+        });
+      } else {
+        if (body) {
+          const parser = new xml2js.Parser({
+            explicitArray: false,
+            tagNameProcessors: [xml2js.processors.stripPrefix]
+          });
+          parser.parseString(body, (err, result) => {
+            if (err) {
+              cb(ErrorHandler('Unable to fetch roles'));
+            } else {
+              cb(ErrorHandler(result.Envelope.Body.Fault.faultstring));
+            }
+          });
+        } else {
+          cb(ErrorHandler('Unable to fetch roles'));
+        }
+      }
+    });
+  };
+
+  Role.getAllUserRoles = (data, req, cb) => {
+    const auth = `Basic ${new Buffer(`${req.UserInfo.username}:${data.adminPassword}`).toString('base64')}`;
+    const xml = template.getAllUserRolesXml(data.username);
+
+    const options = {
+      url: gConfig.URL.User,
+      method: 'POST',
+      body: xml,
+      headers: {
+        'Content-Type': 'text/xml',
+        'Accept-Encoding': 'gzip,deflate',
+        'Content-Length': xml.length,
+        'SOAPAction': gConfig.User.getRoleListOfUser,
+        'Authorization': auth
+      }
+    };
+
+    request(options, (error, response, body) => {
+      if (error) {
+        cb(error);
+      } else if (response && (response.statusCode == 200 || response.statusCode == 202)) {
+        const parser = new xml2js.Parser({
+          explicitArray: false,
+          tagNameProcessors: [xml2js.processors.stripPrefix]
+        });
+
+        parser.parseString(body, (err, result) => {
+          if (result) {
+            const roles = _.map(result.Envelope.Body.getRoleListOfUserResponse.return, (role) => {
+              return {
+                name: role
+              };
+            });
+            cb(null, roles);
+          } else {
+            cb(ErrorHandler('Unable to fetch roles'));
+          }
+        });
+      } else {
+        if (body) {
+          const parser = new xml2js.Parser({
+            explicitArray: false,
+            tagNameProcessors: [xml2js.processors.stripPrefix]
+          });
+          parser.parseString(body, (err, result) => {
+            if (err) {
+              cb(ErrorHandler('Unable to fetch roles'));
+            } else {
+              cb(ErrorHandler(result.Envelope.Body.Fault.faultstring));
+            }
+          });
+        } else {
+          cb(ErrorHandler('Unable to fetch roles'));
+        }
+      }
+    });
+  };
+
+  Role.getAllRoleUsers = (data, req, cb) => {
+    const auth = `Basic ${new Buffer(`${req.UserInfo.username}:${data.adminPassword}`).toString('base64')}`;
+    const xml = template.getAllUserForRolesXml(data.role);
+
+    const options = {
+      url: gConfig.URL.User,
+      method: 'POST',
+      body: xml,
+      headers: {
+        'Content-Type': 'text/xml',
+        'Accept-Encoding': 'gzip,deflate',
+        'Content-Length': xml.length,
+        'SOAPAction': gConfig.User.getUserListOfRole,
+        'Authorization': auth
+      }
+    };
+
+    request(options, (error, response, body) => {
+      if (error) {
+        cb(error);
+      } else if (response && (response.statusCode == 200 || response.statusCode == 202)) {
+        const parser = new xml2js.Parser({
+          explicitArray: false,
+          tagNameProcessors: [xml2js.processors.stripPrefix]
+        });
+
+        parser.parseString(body, (err, result) => {
+          if (result) {
+            const users = _.map(result.Envelope.Body.getUserListOfRoleResponse.return, (val) => {
               return {
                 username: val,
                 tenantId: req.UserInfo.tenantId,
                 userId: uuidv5(`http://${req.UserInfo.tenantId}/${val}`, uuidv5.URL)
               };
             });
-            cb(null, lusers);
+            cb(null, users);
           } else {
             cb(ErrorHandler('Unable to fetch users'));
           }
@@ -284,19 +298,19 @@ module.exports = (app) => {
     });
   };
 
-  Users.updateUserProfile = (data, req, cb) => {
-    const auth = `Basic ${new Buffer(`${req.UserInfo.username}:${data.password}`).toString('base64')}`;
-    const xml = template.updateProfileXml(data.claims, data.username);
+  Role.updateUserRole = (data, req, cb) => {
+    const auth = `Basic ${new Buffer(`${req.UserInfo.username}:${data.adminPassword}`).toString('base64')}`;
+    const xml = template.updateUserRoleXml(data.username, data.oldrole, data.newrole);
 
     const options = {
-      url: gConfig.URL.Profile,
+      url: gConfig.URL.User,
       method: 'POST',
       body: xml,
       headers: {
         'Content-Type': 'text/xml',
         'Accept-Encoding': 'gzip,deflate',
         'Content-Length': xml.length,
-        'SOAPAction': gConfig.Profile.setUserProfile,
+        'SOAPAction': gConfig.updateUserRole.soapaction,
         'Authorization': auth
       }
     };
@@ -306,7 +320,7 @@ module.exports = (app) => {
         cb(error);
       } else if (response && (response.statusCode == 200 || response.statusCode == 202)) {
         cb(null, {
-          'message': 'User profile updated successfully',
+          'message': 'Role updated successfully'
         });
       } else {
         if (body) {
@@ -316,26 +330,15 @@ module.exports = (app) => {
           });
           parser.parseString(body, (err, result) => {
             if (err) {
-              cb(ErrorHandler('User profile update failed'));
+              cb(ErrorHandler('Role update failed'));
             } else {
               cb(ErrorHandler(result.Envelope.Body.Fault.faultstring));
             }
           });
         } else {
-          cb(ErrorHandler('User profile update failed'));
+          cb(ErrorHandler('Role update failed'));
         }
       }
     });
-  };
-
-  Users.findByUsername = (username, req, cb) => {
-    Users.findOne({
-      'where': {
-        'and': [
-          { 'username': username },
-          { 'tenantId': req.UserInfo.tenantId }
-        ]
-      }
-    }, cb);
   };
 };

@@ -22,4 +22,88 @@ module.exports = (Users) => {
   _.each(methodsToDisable, (method) => {
     Users.disableRemoteMethodByName(method);
   });
+
+  Users.remoteMethod(
+    'updateCredential', {
+      description: 'Update Credentials',
+      accepts: [{
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' },
+        required: true
+      }, {
+        arg: 'req',
+        type: 'any',
+        http: { source: 'req' },
+        required: true
+      }],
+      returns: {
+        arg: 'users',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/changePassword',
+        verb: 'post',
+        status: 200,
+        errorStatus: 400
+      }
+    }
+  );
+
+  Users.remoteMethod(
+    'updateCredentialByAdmin', {
+      description: 'Update Credentials',
+      accepts: [{
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' },
+        required: true
+      }, {
+        arg: 'req',
+        type: 'any',
+        http: { source: 'req' },
+        required: true
+      }],
+      returns: {
+        arg: 'users',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/resetPassword',
+        verb: 'post',
+        status: 200,
+        errorStatus: 400
+      }
+    }
+  );
+
+  Users.remoteMethod(
+    'findByUsername', {
+      description: 'find User by username',
+      accepts: [{
+        arg: 'username',
+        type: 'string',
+        http: { source: 'path' },
+        required: true
+      }, {
+        arg: 'req',
+        type: 'any',
+        http: { source: 'req' },
+        required: true
+      }],
+      returns: {
+        arg: 'users',
+        type: 'object',
+        root: true
+      },
+      http: {
+        path: '/findByUsername/:username',
+        verb: 'post',
+        status: 200,
+        errorStatus: 400
+      }
+    }
+  );
 };
