@@ -46,7 +46,7 @@ module.exports = (Organization) => {
     'activateOrganization', {
       description: ' activate Organization',
       accepts: [{
-        arg: 'tenantId',
+        arg: 'id',
         type: 'string',
         http: { source: 'path' },
         required: true
