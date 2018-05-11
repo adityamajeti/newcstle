@@ -327,4 +327,15 @@ module.exports = (app) => {
       }
     });
   };
+
+  Users.findByUsername = (username, tenantId, cb) => {
+    Users.findOne({
+      'where': {
+        'and': [
+          { 'username': username },
+          { 'tenantId': tenantId }
+        ]
+      }
+    }, cb);
+  };
 };

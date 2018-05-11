@@ -24,7 +24,6 @@ module.exports = (options) => {
       next();
     } else if (typeof req.headers['x-jwt-assertion'] != 'undefined') {
       req.JWTtoken = jwtDecode(req.headers['x-jwt-assertion']);
-      // console.log(JSON.stringify(req.JWTtoken));
       req.UserInfo = {
         'roles': (typeof req.JWTtoken['http://wso2.org/claims/role'] === 'string') ? [req.JWTtoken['http://wso2.org/claims/role']] : req.JWTtoken['http://wso2.org/claims/role'],
         'username': req.JWTtoken['http://wso2.org/claims/enduser'],

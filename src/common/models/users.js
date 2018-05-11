@@ -28,7 +28,7 @@ module.exports = (Users) => {
       description: 'Update Credentials',
       accepts: [{
         arg: 'data',
-        type: 'any',
+        type: 'object',
         http: { source: 'body' },
         required: true
       }, {
@@ -43,7 +43,7 @@ module.exports = (Users) => {
         root: true
       },
       http: {
-        path: '/updateCredential',
+        path: '/changePassword',
         verb: 'post',
         status: 200,
         errorStatus: 400
@@ -56,7 +56,7 @@ module.exports = (Users) => {
       description: 'Update Credentials',
       accepts: [{
         arg: 'data',
-        type: 'any',
+        type: 'object',
         http: { source: 'body' },
         required: true
       }, {
@@ -71,35 +71,7 @@ module.exports = (Users) => {
         root: true
       },
       http: {
-        path: '/updateCredentialByAdmin',
-        verb: 'post',
-        status: 200,
-        errorStatus: 400
-      }
-    }
-  );
-
-  Users.remoteMethod(
-    'getUserList', {
-      description: 'get user list',
-      accepts: [{
-        arg: 'data',
-        type: 'any',
-        http: { source: 'body' },
-        required: true
-      }, {
-        arg: 'req',
-        type: 'any',
-        http: { source: 'req' },
-        required: true
-      }],
-      returns: {
-        arg: 'users',
-        type: 'object',
-        root: true
-      },
-      http: {
-        path: '/getUserList',
+        path: '/resetPassword',
         verb: 'post',
         status: 200,
         errorStatus: 400
