@@ -30,7 +30,7 @@
       "type": "string"
     },
     "roles": {
-      "type": "string"
+      "type": ["string"]
     },
     "email": {
       "type": "string"

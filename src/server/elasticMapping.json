@@ -61,7 +61,8 @@
       "type": "keyword",
       "index": true
     },
-    "locale": {
+    "locale":
+    {
       "type": "keyword",
       "index": true
     },
@@ -69,6 +70,35 @@
     {
       "type": "text",
       "index": false
+    },
+    "location":
+    {
+      "properties":
+      {
+        "type":
+        {
+          "type": "keyword",
+          "index": true
+        },
+        "geoAddress":
+        {
+          "type": "geo_shape"
+        },
+        "physicalAddress":
+        {
+          "type": "text",
+          "index": true
+        },
+        "ipAddress":
+        {
+          "type": "ip"
+        },
+        "handleAddress":
+        {
+          "type": "keyword",
+          "index": true
+        }
+      }
     },
     "domain":
     {
@@ -90,25 +120,31 @@
       "type": "keyword",
       "index": true
     },
-    "firstname": {
+    "firstname":
+    {
       "type": "keyword",
       "index": true
     },
-    "lastname": {
+    "lastname":
+    {
       "type": "keyword",
       "index": true
     },
-    "roles": {
+    "roles":
+    {
       "type": "keyword",
       "index": true
     },
-    "mobile": {
+    "mobile":
+    {
       "type": "keyword",
       "index": true
     },
-    "attributes": {
+    "attributes":
+    {
       "type": "nested",
-      "properties": {
+      "properties":
+      {
         "key":
         {
           "type": "keyword",

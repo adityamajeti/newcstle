@@ -11,6 +11,7 @@ module.exports = {
   'Tenant': {
     'addTenant': 'urn:addTenant',
     'getTenant': 'urn:getTenant',
+    'getTenantId': 'urn:getTenantId',
     'retriveTenants': 'urn:retrieveTenants',
     'updateTenant': 'urn:updateTenant',
     'deleteTenant': 'urn:deleteTenant',
