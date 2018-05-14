@@ -5,10 +5,6 @@ module.exports = (options) => {
   const uuidv5 = require('uuid/v5');
   const _ = require('underscore');
   return (req, res, next) => {
-    const {
-      Organization,
-      Users,
-    } = req.app.models;
     if (process.env.ATDEV && process.env.ATDEV == 'dev') {
       req.UserInfo = {
         'roles': ['admin', 'ORGANIZATION_ADMIN', 'SYSTEM_ENGINEER'],
@@ -39,31 +35,7 @@ module.exports = (options) => {
 
       req.UserInfo.userId = req.JWTtoken['http://wso2.org/claims/userid'] ? req.JWTtoken['http://wso2.org/claims/userid'] : uuidv5(`http://${req.UserInfo.tenantId}/${req.UserInfo.username.replace(`@${req.UserInfo.tenantId}`, '')}`, uuidv5.URL);
 
-      Users.exists(req.UserInfo.userId, (err, exists) => {
-        if (exists) {
-          next();
-        } else {
-          const uprofile = _.clone(req.UserInfo);
-          delete uprofile.usertype;
-          delete uprofile.version;
-          const orgprofile = {
-            tenantId: uprofile.tenantId,
-            name: uprofile.tenantId,
-            email: '',
-            address: uprofile.address
-          };
-          Organization.exists(uprofile.tenantId, (e, t) => {
-            if (!t || e) {
-              Organization.create(orgprofile, () => {
-                //
-              });
-            }
-          });
-          Users.create(uprofile, () => {
-            next();
-          });
-        }
-      });
+      next();
     } else {
       const error = new Error('Authorization failed');
       error.statusCode = 401;

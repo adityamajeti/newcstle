@@ -37,6 +37,12 @@
       "paths": [
         "${restApiRoot}"
       ]
+    },
+    "./middleware/saveUserNTenant": {
+      "params": {},
+      "paths": [
+        "${restApiRoot}"
+      ]
     }
   },
   "parse": {},
