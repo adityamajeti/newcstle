@@ -34,7 +34,6 @@ module.exports = (options) => {
       };
 
       req.UserInfo.userId = req.JWTtoken['http://wso2.org/claims/userid'] ? req.JWTtoken['http://wso2.org/claims/userid'] : uuidv5(`http://${req.UserInfo.tenantId}/${req.UserInfo.username.replace(`@${req.UserInfo.tenantId}`, '')}`, uuidv5.URL);
-
       next();
     } else {
       const error = new Error('Authorization failed');

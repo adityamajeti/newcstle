@@ -34,19 +34,19 @@
   "auth": {
     "./middleware/auth": {
       "paths": [
-        "${restApiRoot}/organization",
-        "${restApiRoot}/users",
-        "${restApiRoot}/domains",
-        "${restApiRoot}/entityTypes"
+        "/api/v1/organization",
+        "/api/v1/users",
+        "/api/v1/domains",
+        "/api/v1/entityTypes"
       ],
       "params": {}
     },
     "./middleware/saveUserNTenant": {
       "paths": [
-        "${restApiRoot}/organization",
-        "${restApiRoot}/users",
-        "${restApiRoot}/domains",
-        "${restApiRoot}/entityTypes"
+        "/api/v1/organization",
+        "/api/v1/users",
+        "/api/v1/domains",
+        "/api/v1/entityTypes"
       ],
       "params": {}
     }

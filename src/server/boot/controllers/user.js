@@ -336,6 +336,12 @@ module.exports = (app) => {
           { 'tenantId': req.UserInfo.tenantId }
         ]
       }
-    }, cb);
+    }, (e, c) => {
+      if(c) {
+        cb(null, c);
+      } else {
+        cb(ErrorHandler('User not found', null, 404));
+      }
+    });
   };
 };
