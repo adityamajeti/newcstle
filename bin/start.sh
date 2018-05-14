@@ -4,5 +4,5 @@ currentdir=`pwd`
 pm2 stop atlantisGateway
 pm2 delete atlantisGateway
 pm2 flush
-pm2 start process.json
+pm2 start process.json --env dev
 exit;
