@@ -16,8 +16,8 @@
     },
     "tenantId": {
       "type": "string",
-      "required": true,
-      "id": true
+      "id": true,
+      "required": true
     },
     "wso2Id": {
       "type": "string"
@@ -26,8 +26,12 @@
       "type": "string"
     },
     "locale": {
-      "type": ["string"],
-      "default": ["en-US"]
+      "type": [
+        "string"
+      ],
+      "default": [
+        "en-US"
+      ]
     },
     "timezone": {
       "type": "string",

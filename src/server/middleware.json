@@ -33,16 +33,22 @@
   "session": {},
   "auth": {
     "./middleware/auth": {
-      "params": {},
       "paths": [
-        "${restApiRoot}"
-      ]
+        "${restApiRoot}/organization",
+        "${restApiRoot}/users",
+        "${restApiRoot}/domains",
+        "${restApiRoot}/entityTypes"
+      ],
+      "params": {}
     },
     "./middleware/saveUserNTenant": {
-      "params": {},
       "paths": [
-        "${restApiRoot}"
-      ]
+        "${restApiRoot}/organization",
+        "${restApiRoot}/users",
+        "${restApiRoot}/domains",
+        "${restApiRoot}/entityTypes"
+      ],
+      "params": {}
     }
   },
   "parse": {},

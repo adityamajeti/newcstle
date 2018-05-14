@@ -67,5 +67,9 @@
   "UserRegion": {
     "dataSource": "es",
     "public": false
+  },
+  "Public": {
+    "dataSource": null,
+    "public": true
   }
 }

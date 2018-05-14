@@ -12,8 +12,8 @@
   "properties": {
     "userId": {
       "type": "string",
-      "required": true,
-      "id": true
+      "id": true,
+      "required": true
     },
     "username": {
       "type": "string",
@@ -30,7 +30,9 @@
       "type": "string"
     },
     "roles": {
-      "type": ["string"]
+      "type": [
+        "string"
+      ]
     },
     "email": {
       "type": "string"
@@ -39,7 +41,9 @@
       "type": "string"
     },
     "attributes": {
-      "type": ["object"]
+      "type": [
+        "object"
+      ]
     }
   },
   "validations": [],
