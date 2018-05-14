@@ -8,6 +8,5 @@ NOT Working
 
 
 ## Way to fix swagger for WSO2
-lb export-api-def --json -o devfiles/core-swagger-raw.json
-cd devfiles
+lb export-api-def --json -o ../doc/core-swagger-raw.json
 node lbswaggerfix.js
