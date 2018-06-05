@@ -8,6 +8,15 @@ module.exports = (options) => {
       Organization,
       Users,
     } = req.app.models;
+    const uprofile = _.clone(req.UserInfo);
+    delete uprofile.usertype;
+    delete uprofile.version;
+    const orgprofile = {
+      tenantId: uprofile.tenantId,
+      name: uprofile.tenantId,
+      email: '',
+      address: uprofile.address
+    };
     Users.exists(req.UserInfo.userId, (err, exists) => {
       if (exists) {
         next();
@@ -19,15 +28,6 @@ module.exports = (options) => {
           }
         });
       } else {
-        const uprofile = _.clone(req.UserInfo);
-        delete uprofile.usertype;
-        delete uprofile.version;
-        const orgprofile = {
-          tenantId: uprofile.tenantId,
-          name: uprofile.tenantId,
-          email: '',
-          address: uprofile.address
-        };
         Organization.exists(uprofile.tenantId, (e, t) => {
           if (!t || e) {
             Organization.create(orgprofile, () => {

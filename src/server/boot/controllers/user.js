@@ -137,7 +137,7 @@ module.exports = (app) => {
 
   Users.updateCredential = (data, req, cb) => {
     const auth = `Basic ${new Buffer(`${req.UserInfo.username}:${data.oldpassword}`).toString('base64')}`;
-    const username = (data.username).substring(data.username, data.username.lastIndexOf('@')) != "" ? (data.username).substring(data.username, data.username.lastIndexOf('@')) : data.username;
+    const username = (data.username).substring(data.username, data.username.lastIndexOf('@')) != '' ? (data.username).substring(data.username, data.username.lastIndexOf('@')) : data.username;
 
     const xml = template.updateCredentialsXml(username, data.oldpassword, data.newpassword);
 
@@ -339,7 +339,7 @@ module.exports = (app) => {
         ]
       }
     }, (e, c) => {
-      if(c) {
+      if (c) {
         cb(null, c);
       } else {
         cb(ErrorHandler('User not found', null, 404));
