@@ -8,11 +8,11 @@ module.exports = (app) => {
     Region,
     Domain,
   } = app.models;
-  
+
   // tenantId injector
-  /*const methodACLInjector = {};
+  /* const methodACLInjector = {};
   methodACLInjector['belongsTo'] = {}
-  
+
   methodACLInjector['belongsTo']['find'] = (field, value, filter) => {
     const injectField = {};
     injectField[field] = value;
@@ -98,7 +98,7 @@ module.exports = (app) => {
       foreignKey: 'userId',
       keyThrough: 'dashboardId'
     }
-  }*/
+  } */
 
   // ACL Validator for methods
 

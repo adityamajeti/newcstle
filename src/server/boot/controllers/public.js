@@ -25,7 +25,7 @@ module.exports = (app) => {
 
   Public.getOrganizationById = (id, cb) => {
   	Organization.findById(id, (e, c) => {
-  		if(c) {
+  		if (c) {
   			cb(null, c);
   		} else {
   			cb(ErrorHandler(`Organization: ${id} not found`));

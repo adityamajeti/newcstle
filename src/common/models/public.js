@@ -2,7 +2,11 @@
 
 module.exports = (Public) => {
   Public.sharedClass.methods().forEach((method) => {
-    method.isStatic ? Public.disableRemoteMethodByName(method.name) : Public.disableRemoteMethodByName(`prototype.${method.name}`);
+    if (method.isStatic) {
+      Public.disableRemoteMethodByName(method.name);
+    } else {
+      Public.disableRemoteMethodByName(`prototype.${method.name}`);
+    }
   });
 
   Public.remoteMethod(
@@ -11,7 +15,9 @@ module.exports = (Public) => {
       accepts: [{
         arg: 'id',
         type: 'string',
-        http: { source: 'path' },
+        http: {
+          source: 'path'
+        },
         required: true
       }],
       returns: {
