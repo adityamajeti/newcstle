@@ -137,7 +137,9 @@ module.exports = (app) => {
 
   Users.updateCredential = (data, req, cb) => {
     const auth = `Basic ${new Buffer(`${req.UserInfo.username}:${data.oldpassword}`).toString('base64')}`;
-    const xml = template.updateCredentialsXml(data.username, data.oldpassword, data.newpassword);
+    const username = (data.username).substring(data.username, data.username.lastIndexOf('@')) != "" ? (data.username).substring(data.username, data.username.lastIndexOf('@')) : data.username;
+
+    const xml = template.updateCredentialsXml(username, data.oldpassword, data.newpassword);
 
     const options = {
       url: gConfig.URL.User,
