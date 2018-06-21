@@ -31,26 +31,7 @@
     }
   },
   "session": {},
-  "auth": {
-    "./middleware/auth": {
-      "paths": [
-        "/api/v1/organization",
-        "/api/v1/users",
-        "/api/v1/domains",
-        "/api/v1/entityTypes"
-      ],
-      "params": {}
-    },
-    "./middleware/saveUserNTenant": {
-      "paths": [
-        "/api/v1/organization",
-        "/api/v1/users",
-        "/api/v1/domains",
-        "/api/v1/entityTypes"
-      ],
-      "params": {}
-    }
-  },
+  "auth": {},
   "parse": {},
   "routes": {
     "loopback#rest": {

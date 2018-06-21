@@ -25,49 +25,6 @@
     "dataSource": "db",
     "public": false
   },
-  "RoleMapping": {
-    "dataSource": "db",
-    "public": false,
-    "options": {
-      "strictObjectIDCoercion": true
-    }
-  },
-  "Role": {
-    "dataSource": "db",
-    "public": false
-  },
-  "Users": {
-    "dataSource": "es",
-    "public": true
-  },
-  "Organization": {
-    "dataSource": "es",
-    "public": true
-  },
-  "Region": {
-    "dataSource": "es",
-    "public": false
-  },
-  "Domain": {
-    "dataSource": "es",
-    "public": true
-  },
-  "EntityType": {
-    "dataSource": "es",
-    "public": true
-  },
-  "OrganizationDomain": {
-    "dataSource": "es",
-    "public": false
-  },
-  "UserDomain": {
-    "dataSource": "es",
-    "public": false
-  },
-  "UserRegion": {
-    "dataSource": "es",
-    "public": false
-  },
   "Public": {
     "dataSource": null,
     "public": true

@@ -1,6 +1,6 @@
 {
   "apps": [{
-    "name": "atlantisGateway",
+    "name": "Newcstle",
     "script": "./server/server.js",
     "watch": false,
     "exec_mode": "cluster",

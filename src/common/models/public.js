@@ -9,28 +9,23 @@ module.exports = (Public) => {
     }
   });
 
-  Public.remoteMethod(
-    'getOrganizationById', {
-      description: 'Get Organization basic profile',
-      accepts: [{
-        arg: 'id',
-        type: 'string',
-        http: {
-          source: 'path'
+  	Public.remoteMethod('newcastledevices', {
+        description: ["newcastle devices"],
+        accepts: [{
+            arg: 'data',
+            type: 'object',
+            http: { "source": "body" },
+            required: true
+        }],
+        returns: {
+            type: 'object',
+            root: true
         },
-        required: true
-      }],
-      returns: {
-        arg: 'Organization',
-        type: 'Organization',
-        root: true
-      },
-      http: {
-        path: '/organization/:id',
-        verb: 'get',
-        status: 200,
-        errorStatus: 404
-      }
-    }
-  );
+        http: {
+            path: '/t/newcastle.com/cdp/v1/devices',
+            verb: 'post',
+            status: 200,
+            errorStatus: 400
+        }
+    });
 };
